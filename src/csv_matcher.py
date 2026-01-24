@@ -6,17 +6,15 @@ from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel,
                              QTableWidget, QTableWidgetItem, QHeaderView, QFileDialog, QMessageBox)
 from PyQt6.QtCore import Qt, pyqtSignal
 from styles import DARK_THEME
+# FIX: Import from the renamed file 'app_translations'
+from src.app_translations import tr
 
 class CsvMatcherDialog(QDialog):
-    """
-    Dialog to Match Local Files against a CSV/Excel export.
-    """
-    # Signal: (List of file paths, List of track data, Album Info, Append_Flag)
     matches_confirmed = pyqtSignal(list, list, object, bool)
 
     def __init__(self, current_files, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("CSV Data Matcher")
+        self.setWindowTitle(tr("csv_title"))
         self.resize(1100, 750)
         
         self.local_files = current_files 
@@ -27,10 +25,10 @@ class CsvMatcherDialog(QDialog):
         layout = QVBoxLayout(self)
         
         # --- 1. Load Section ---
-        top_group = QGroupBox("1. Load Data")
+        top_group = QGroupBox(tr("load_group"))
         top_layout = QHBoxLayout()
-        self.lbl_status = QLabel("No CSV loaded")
-        btn_load = QPushButton("📂 Select CSV File")
+        self.lbl_status = QLabel(tr("no_csv"))
+        btn_load = QPushButton(tr("select_csv"))
         btn_load.clicked.connect(self.load_csv)
         
         top_layout.addWidget(btn_load)
@@ -39,14 +37,14 @@ class CsvMatcherDialog(QDialog):
         top_group.setLayout(top_layout)
         
         # --- 2. Match Section ---
-        match_group = QGroupBox("2. Align Files")
+        match_group = QGroupBox(tr("align_files_group"))
         match_layout = QVBoxLayout()
         splitter = QSplitter(Qt.Orientation.Horizontal)
         
         # LEFT: Local Files
         left_container = QWidget()
         left_box = QVBoxLayout(left_container)
-        left_box.addWidget(QLabel("YOUR FILES:"))
+        left_box.addWidget(QLabel(tr("your_files")))
         
         self.file_list = QListWidget()
         self.file_list.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
@@ -59,7 +57,7 @@ class CsvMatcherDialog(QDialog):
         left_box.addWidget(self.file_list)
         
         # Remove Button for Files
-        btn_remove_file = QPushButton("🗑️ Remove Selected File")
+        btn_remove_file = QPushButton(tr("remove_file"))
         btn_remove_file.setStyleSheet("background-color: #d32f2f; color: white;")
         btn_remove_file.clicked.connect(self.remove_selected_file)
         left_box.addWidget(btn_remove_file)
@@ -67,11 +65,11 @@ class CsvMatcherDialog(QDialog):
         # RIGHT: CSV Data
         right_container = QWidget()
         right_box = QVBoxLayout(right_container)
-        right_box.addWidget(QLabel("CSV ROWS:"))
+        right_box.addWidget(QLabel(tr("csv_rows")))
         
         self.csv_table = QTableWidget()
         self.csv_table.setColumnCount(3)
-        self.csv_table.setHorizontalHeaderLabels(["Track", "Title", "Artist"])
+        self.csv_table.setHorizontalHeaderLabels([tr("lbl_track"), tr("lbl_title"), tr("lbl_artist")])
         
         header = self.csv_table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
@@ -88,7 +86,7 @@ class CsvMatcherDialog(QDialog):
         right_box.addWidget(self.csv_table)
         
         # Delete Button for CSV Rows
-        btn_delete_row = QPushButton("🗑️ Remove Selected CSV Row")
+        btn_delete_row = QPushButton(tr("remove_row"))
         btn_delete_row.clicked.connect(self.delete_selected_rows)
         right_box.addWidget(btn_delete_row)
         
@@ -100,17 +98,17 @@ class CsvMatcherDialog(QDialog):
         # --- 3. Action Buttons ---
         btn_box = QHBoxLayout()
         
-        self.btn_link = QPushButton("🔗 Link Selected Pair")
+        self.btn_link = QPushButton(tr("link_pair"))
         self.btn_link.setStyleSheet("background-color: #007bff; font-weight: bold; padding: 10px;")
         self.btn_link.setEnabled(False)
         self.btn_link.clicked.connect(self.link_selected_pair)
         
-        self.btn_apply = QPushButton("✅ Apply All Matches")
+        self.btn_apply = QPushButton(tr("apply_all"))
         self.btn_apply.setStyleSheet("background-color: #28a745; font-weight: bold; padding: 10px;")
         self.btn_apply.setEnabled(False)
         self.btn_apply.clicked.connect(self.confirm_all_matches)
         
-        btn_cancel = QPushButton("Close")
+        btn_cancel = QPushButton(tr("close_btn"))
         btn_cancel.clicked.connect(self.reject)
         
         btn_box.addWidget(btn_cancel)
@@ -160,7 +158,7 @@ class CsvMatcherDialog(QDialog):
                     if len(rows[0]) >= 3:
                         col_map = {"track": 0, "artist": 1, "title": 4} 
                     else:
-                        QMessageBox.warning(self, "Warning", "Could not identify columns. Using default guess.")
+                        QMessageBox.warning(self, tr("csv_warning"), tr("csv_guess_warning"))
                         col_map = {"track": 0, "artist": 1, "title": 2}
 
                 data_rows = rows[header_idx+1:]
@@ -182,7 +180,7 @@ class CsvMatcherDialog(QDialog):
             self.btn_link.setEnabled(True)
             
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"Could not parse CSV: {e}")
+            QMessageBox.critical(self, tr("csv_error"), f"Could not parse CSV: {e}")
 
     def remove_selected_file(self):
         for item in self.file_list.selectedItems():
@@ -204,7 +202,7 @@ class CsvMatcherDialog(QDialog):
         rows = self.csv_table.selectedIndexes()
         
         if not files or not rows:
-            QMessageBox.warning(self, "Selection", "Please select 1 File (Left) and 1 Row (Right).")
+            QMessageBox.warning(self, tr("csv_warning"), tr("csv_select_pair"))
             return
             
         file_path = files[0].data(Qt.ItemDataRole.UserRole)

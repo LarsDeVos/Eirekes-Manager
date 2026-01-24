@@ -1,170 +1,92 @@
-2026-01-24 16:35:48,091 - INFO - Application Started
-2026-01-24 16:36:29,764 - INFO - Staging matches (Append=False)...
-2026-01-24 16:36:32,018 - INFO - Starting Batch Save...
-2026-01-24 16:36:32,024 - INFO - Saved metadata for 01 - Ik Leef Vér Carnaval.mp3
-2026-01-24 16:36:32,024 - INFO - Renamed to 1998 - Unknown.mp3
-2026-01-24 16:36:32,026 - INFO - Saved metadata for 02 - Nen Ajoin Zèn Baal.mp3
-2026-01-24 16:36:32,026 - INFO - Renamed to 01 - Ik Leef Vér CarnavalPrins 1998 Den Bremt.mp3
-2026-01-24 16:36:32,026 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/01 - Ik Leef Vér CarnavalPrins 1998 Den Bremt.lrc
-2026-01-24 16:36:32,027 - INFO - Saved metadata for 03 - Den Bajord.mp3
-2026-01-24 16:36:32,027 - INFO - Renamed to 02 - Nen Ajoin Zèn BaalOnzjiër Zèn Préférés.mp3
-2026-01-24 16:36:32,027 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/02 - Nen Ajoin Zèn BaalOnzjiër Zèn Préférés.lrc
-2026-01-24 16:36:32,028 - INFO - Saved metadata for 04 - Mankeirt'er Een Vois.mp3
-2026-01-24 16:36:32,029 - INFO - Renamed to 03 - Den BajordDe Foef Vér 1997.mp3
-2026-01-24 16:36:32,029 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/03 - Den BajordDe Foef Vér 1997.lrc
-2026-01-24 16:36:32,030 - INFO - Saved metadata for 05 - Gemem Op De GSM.mp3
-2026-01-24 16:36:32,030 - INFO - Renamed to 04 - Mankeirt’er Een VoisPascal Brewee.mp3
-2026-01-24 16:36:32,030 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/04 - Mankeirt’er Een VoisPascal Brewee.lrc
-2026-01-24 16:36:32,031 - INFO - Saved metadata for 06 - Da Bisjtjen.mp3
-2026-01-24 16:36:32,031 - INFO - Renamed to 05 - Gemem Op De GSMKris I & De Foef.mp3
-2026-01-24 16:36:32,031 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/05 - Gemem Op De GSMKris I & De Foef.lrc
-2026-01-24 16:36:32,032 - INFO - Saved metadata for 07 - Blijft Van Mèn Hoor Af.mp3
-2026-01-24 16:36:32,032 - INFO - Renamed to 06 - Da BisjtjenArendprins 1993 Gary.mp3
-2026-01-24 16:36:32,032 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/06 - Da BisjtjenArendprins 1993 Gary.lrc
-2026-01-24 16:36:32,033 - INFO - Saved metadata for 08 - Montignac.mp3
-2026-01-24 16:36:32,034 - INFO - Renamed to 07 - Blijft Van Mèn Hoor AfGKOKG Vanderzelven.mp3
-2026-01-24 16:36:32,034 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/07 - Blijft Van Mèn Hoor AfGKOKG Vanderzelven.lrc
-2026-01-24 16:36:32,035 - INFO - Saved metadata for 09 - Iejl Gedétajeird.mp3
-2026-01-24 16:36:32,035 - INFO - Renamed to 08 - MontignacNoig g' Ambeteird & Vriejt Gezjeneird 1998.mp3
-2026-01-24 16:36:32,035 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/08 - MontignacNoig g' Ambeteird & Vriejt Gezjeneird 1998.lrc
-2026-01-24 16:36:32,036 - INFO - Saved metadata for 10 - Oilsjt Carnaval.mp3
-2026-01-24 16:36:32,036 - INFO - Renamed to 09 - Iejl GedétajeirdDe Lodderoeigen 1998.mp3
-2026-01-24 16:36:32,036 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/09 - Iejl GedétajeirdDe Lodderoeigen 1998.lrc
-2026-01-24 16:36:32,037 - INFO - Saved metadata for 11 - De Poeirten Gon Al Oepen.mp3
-2026-01-24 16:36:32,037 - INFO - Renamed to 10 - Oilsjt CarnavalEirg.mp3
-2026-01-24 16:36:32,037 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/10 - Oilsjt CarnavalEirg.lrc
-2026-01-24 16:36:32,038 - INFO - Saved metadata for 12 - Saas Oon A Leppen.mp3
-2026-01-24 16:36:32,038 - INFO - Renamed to 11 - De Poeirten Gon Al OepenTony Vér 1999.mp3
-2026-01-24 16:36:32,038 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/11 - De Poeirten Gon Al OepenTony Vér 1999.lrc
-2026-01-24 16:36:32,040 - INFO - Saved metadata for 13 - Go Van Mèn Boon.mp3
-2026-01-24 16:36:32,040 - INFO - Renamed to 12 - Saas Oon A LeppenDen Biejnaver Vér 1998.mp3
-2026-01-24 16:36:32,040 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/12 - Saas Oon A LeppenDen Biejnaver Vér 1998.lrc
-2026-01-24 16:36:32,041 - INFO - Saved metadata for 14 - Ka-Ka-Ka-Karnaval.mp3
-2026-01-24 16:36:32,041 - INFO - Renamed to 13 - Go Van Mèn BoonDe Loizemaanen 1998.mp3
-2026-01-24 16:36:32,041 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/13 - Go Van Mèn BoonDe Loizemaanen 1998.lrc
-2026-01-24 16:36:32,042 - INFO - Saved metadata for 15 - &#8216;k Em Gezoepen.mp3
-2026-01-24 16:36:32,042 - INFO - Renamed to 14 - Ka-Ka-Ka-KarnavalJean-Paul De Boitselier.mp3
-2026-01-24 16:36:32,042 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/14 - Ka-Ka-Ka-KarnavalJean-Paul De Boitselier.lrc
-2026-01-24 16:36:32,043 - INFO - Saved metadata for 16 - Abbajoot.mp3
-2026-01-24 16:36:32,043 - INFO - Renamed to 15 - ‘k Em GezoepenKris I & De Foef.mp3
-2026-01-24 16:36:32,043 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/15 - ‘k Em GezoepenKris I & De Foef.lrc
-2026-01-24 16:36:32,045 - INFO - Saved metadata for 17 - Dag Carnaval.mp3
-2026-01-24 16:36:32,045 - INFO - Renamed to 16 - AbbajootKris I, Pascal, Peter & Kristof.mp3
-2026-01-24 16:36:32,045 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/16 - AbbajootKris I, Pascal, Peter & Kristof.lrc
-2026-01-24 16:39:30,901 - INFO - Application Started
-2026-01-24 16:39:43,245 - INFO - Staging matches (Append=False)...
-2026-01-24 16:39:52,513 - INFO - Starting Batch Save...
-2026-01-24 16:39:52,518 - ERROR - Error processing 01 - Ik Leef Vér CarnavalPrins 1998 Den Bremt.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:39:52,520 - ERROR - Error processing 02 - Nen Ajoin Zèn BaalOnzjiër Zèn Préférés.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:39:52,521 - ERROR - Error processing 03 - Den BajordDe Foef Vér 1997.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:39:52,521 - ERROR - Error processing 04 - Mankeirt’er Een VoisPascal Brewee.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:39:52,522 - ERROR - Error processing 05 - Gemem Op De GSMKris I & De Foef.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:39:52,523 - ERROR - Error processing 06 - Da BisjtjenArendprins 1993 Gary.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:39:52,523 - ERROR - Error processing 07 - Blijft Van Mèn Hoor AfGKOKG Vanderzelven.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:39:52,524 - ERROR - Error processing 08 - MontignacNoig g' Ambeteird & Vriejt Gezjeneird 1998.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:39:52,525 - ERROR - Error processing 09 - Iejl GedétajeirdDe Lodderoeigen 1998.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:39:52,525 - ERROR - Error processing 10 - Oilsjt CarnavalEirg.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:39:52,526 - ERROR - Error processing 11 - De Poeirten Gon Al OepenTony Vér 1999.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:39:52,526 - ERROR - Error processing 12 - Saas Oon A LeppenDen Biejnaver Vér 1998.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:39:52,527 - ERROR - Error processing 13 - Go Van Mèn BoonDe Loizemaanen 1998.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:39:52,528 - ERROR - Error processing 14 - Ka-Ka-Ka-KarnavalJean-Paul De Boitselier.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:39:52,528 - ERROR - Error processing 15 - ‘k Em GezoepenKris I & De Foef.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:39:52,529 - ERROR - Error processing 16 - AbbajootKris I, Pascal, Peter & Kristof.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:39:52,530 - ERROR - Error processing 1998 - Unknown.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:42:33,536 - INFO - Application Started
-2026-01-24 16:43:52,665 - INFO - Staging matches (Append=False)...
-2026-01-24 16:43:56,096 - INFO - Starting Batch Save...
-2026-01-24 16:43:56,100 - ERROR - Error processing 01 - Ik Leef Vér CarnavalPrins 1998 Den Bremt.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:43:56,100 - ERROR - Error processing 02 - Nen Ajoin Zèn BaalOnzjiër Zèn Préférés.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:43:56,101 - ERROR - Error processing 03 - Den BajordDe Foef Vér 1997.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:43:56,102 - ERROR - Error processing 04 - Mankeirt’er Een VoisPascal Brewee.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:43:56,103 - ERROR - Error processing 05 - Gemem Op De GSMKris I & De Foef.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:43:56,103 - ERROR - Error processing 06 - Da BisjtjenArendprins 1993 Gary.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:43:56,104 - ERROR - Error processing 07 - Blijft Van Mèn Hoor AfGKOKG Vanderzelven.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:43:56,105 - ERROR - Error processing 08 - MontignacNoig g' Ambeteird & Vriejt Gezjeneird 1998.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:43:56,105 - ERROR - Error processing 09 - Iejl GedétajeirdDe Lodderoeigen 1998.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:43:56,106 - ERROR - Error processing 10 - Oilsjt CarnavalEirg.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:43:56,107 - ERROR - Error processing 11 - De Poeirten Gon Al OepenTony Vér 1999.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:43:56,107 - ERROR - Error processing 12 - Saas Oon A LeppenDen Biejnaver Vér 1998.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:43:56,108 - ERROR - Error processing 13 - Go Van Mèn BoonDe Loizemaanen 1998.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:43:56,109 - ERROR - Error processing 14 - Ka-Ka-Ka-KarnavalJean-Paul De Boitselier.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:43:56,109 - ERROR - Error processing 15 - ‘k Em GezoepenKris I & De Foef.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:43:56,110 - ERROR - Error processing 16 - AbbajootKris I, Pascal, Peter & Kristof.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:43:56,110 - ERROR - Error processing 1998 - Unknown.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:44:10,515 - INFO - Staging matches (Append=False)...
-2026-01-24 16:44:11,485 - INFO - Starting Batch Save...
-2026-01-24 16:44:11,486 - ERROR - Error processing 01 - Ik Leef Vér CarnavalPrins 1998 Den Bremt.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:44:11,486 - ERROR - Error processing 02 - Nen Ajoin Zèn BaalOnzjiër Zèn Préférés.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:44:11,487 - ERROR - Error processing 03 - Den BajordDe Foef Vér 1997.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:44:11,488 - ERROR - Error processing 04 - Mankeirt’er Een VoisPascal Brewee.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:44:11,489 - ERROR - Error processing 05 - Gemem Op De GSMKris I & De Foef.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:44:11,489 - ERROR - Error processing 06 - Da BisjtjenArendprins 1993 Gary.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:44:11,490 - ERROR - Error processing 07 - Blijft Van Mèn Hoor AfGKOKG Vanderzelven.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:44:11,491 - ERROR - Error processing 08 - MontignacNoig g' Ambeteird & Vriejt Gezjeneird 1998.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:44:11,491 - ERROR - Error processing 09 - Iejl GedétajeirdDe Lodderoeigen 1998.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:44:11,492 - ERROR - Error processing 10 - Oilsjt CarnavalEirg.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:44:11,493 - ERROR - Error processing 11 - De Poeirten Gon Al OepenTony Vér 1999.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:44:11,493 - ERROR - Error processing 12 - Saas Oon A LeppenDen Biejnaver Vér 1998.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:44:11,494 - ERROR - Error processing 13 - Go Van Mèn BoonDe Loizemaanen 1998.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:44:11,495 - ERROR - Error processing 14 - Ka-Ka-Ka-KarnavalJean-Paul De Boitselier.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:44:11,495 - ERROR - Error processing 15 - ‘k Em GezoepenKris I & De Foef.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:44:11,496 - ERROR - Error processing 16 - AbbajootKris I, Pascal, Peter & Kristof.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:44:11,497 - ERROR - Error processing 1998 - Unknown.mp3: Could not extract year from: Unknown Year
-2026-01-24 16:48:22,772 - INFO - Application Started
-2026-01-24 16:50:08,172 - INFO - Application Started
-2026-01-24 16:50:19,135 - INFO - Staging matches (Append=False)...
-2026-01-24 16:50:22,273 - INFO - Starting Batch Save...
-2026-01-24 16:50:22,279 - INFO - Saved metadata for 01 - Ik Leef Vér CarnavalPrins 1998 Den Bremt.mp3
-2026-01-24 16:50:22,279 - INFO - Renamed to 01 - Ik Leef Vér Carnaval.mp3
-2026-01-24 16:50:22,281 - INFO - Saved metadata for 02 - Nen Ajoin Zèn BaalOnzjiër Zèn Préférés.mp3
-2026-01-24 16:50:22,281 - INFO - Renamed to 02 - Nen Ajoin Zèn Baal.mp3
-2026-01-24 16:50:22,282 - INFO - Saved metadata for 03 - Den BajordDe Foef Vér 1997.mp3
-2026-01-24 16:50:22,282 - INFO - Renamed to 03 - Den Bajord.mp3
-2026-01-24 16:50:22,283 - INFO - Saved metadata for 04 - Mankeirt’er Een VoisPascal Brewee.mp3
-2026-01-24 16:50:22,283 - INFO - Renamed to 04 - Mankeirt'er Een Vois.mp3
-2026-01-24 16:50:22,284 - INFO - Saved metadata for 05 - Gemem Op De GSMKris I & De Foef.mp3
-2026-01-24 16:50:22,284 - INFO - Renamed to 05 - Gemem Op De GSM.mp3
-2026-01-24 16:50:22,285 - INFO - Saved metadata for 06 - Da BisjtjenArendprins 1993 Gary.mp3
-2026-01-24 16:50:22,285 - INFO - Renamed to 06 - Da Bisjtjen.mp3
-2026-01-24 16:50:22,286 - INFO - Saved metadata for 07 - Blijft Van Mèn Hoor AfGKOKG Vanderzelven.mp3
-2026-01-24 16:50:22,286 - INFO - Renamed to 07 - Blijft Van Mèn Hoor Af.mp3
-2026-01-24 16:50:22,287 - INFO - Saved metadata for 08 - MontignacNoig g' Ambeteird & Vriejt Gezjeneird 1998.mp3
-2026-01-24 16:50:22,287 - INFO - Renamed to 08 - Montignac.mp3
-2026-01-24 16:50:22,288 - INFO - Saved metadata for 09 - Iejl GedétajeirdDe Lodderoeigen 1998.mp3
-2026-01-24 16:50:22,288 - INFO - Renamed to 09 - Iejl Gedétajeird.mp3
-2026-01-24 16:50:22,289 - INFO - Saved metadata for 10 - Oilsjt CarnavalEirg.mp3
-2026-01-24 16:50:22,289 - INFO - Renamed to 10 - Oilsjt Carnaval.mp3
-2026-01-24 16:50:22,290 - INFO - Saved metadata for 11 - De Poeirten Gon Al OepenTony Vér 1999.mp3
-2026-01-24 16:50:22,290 - INFO - Renamed to 11 - De Poeirten Gon Al Oepen.mp3
-2026-01-24 16:50:22,291 - INFO - Saved metadata for 12 - Saas Oon A LeppenDen Biejnaver Vér 1998.mp3
-2026-01-24 16:50:22,291 - INFO - Renamed to 12 - Saas Oon A Leppen.mp3
-2026-01-24 16:50:22,292 - INFO - Saved metadata for 13 - Go Van Mèn BoonDe Loizemaanen 1998.mp3
-2026-01-24 16:50:22,292 - INFO - Renamed to 13 - Go Van Mèn Boon.mp3
-2026-01-24 16:50:22,293 - INFO - Saved metadata for 14 - Ka-Ka-Ka-KarnavalJean-Paul De Boitselier.mp3
-2026-01-24 16:50:22,293 - INFO - Renamed to 14 - Ka-Ka-Ka-Karnaval.mp3
-2026-01-24 16:50:22,294 - INFO - Saved metadata for 15 - ‘k Em GezoepenKris I & De Foef.mp3
-2026-01-24 16:50:22,294 - INFO - Renamed to 15 - &#8216;k Em Gezoepen.mp3
-2026-01-24 16:50:22,295 - INFO - Saved metadata for 16 - AbbajootKris I, Pascal, Peter & Kristof.mp3
-2026-01-24 16:50:22,295 - INFO - Renamed to 16 - Abbajoot.mp3
-2026-01-24 16:50:22,296 - INFO - Saved metadata for 1998 - Unknown.mp3
-2026-01-24 16:50:22,296 - INFO - Renamed to 17 - Dag Carnaval.mp3
-2026-01-24 16:55:11,353 - INFO - Application Started
-2026-01-24 16:55:23,190 - INFO - Staging matches (Append=False)...
-2026-01-24 16:55:24,396 - INFO - Starting Batch Save...
-2026-01-24 16:58:30,367 - INFO - Application Started
-2026-01-24 16:58:38,804 - INFO - Staging matches (Append=False)...
-2026-01-24 16:58:39,747 - INFO - Starting Batch Save...
-2026-01-24 17:01:23,728 - INFO - Application Started
-2026-01-24 17:01:33,089 - INFO - Staging matches (Append=False)...
-2026-01-24 17:02:59,864 - INFO - Application Started
-2026-01-24 17:03:07,844 - INFO - Staging matches (Append=False)...
-2026-01-24 17:04:00,959 - INFO - Application Started
-2026-01-24 17:04:51,739 - INFO - Application Started
-2026-01-24 17:05:00,843 - INFO - Staging matches (Append=False)...
-2026-01-24 17:07:54,237 - INFO - Application Started
-2026-01-24 17:08:53,106 - INFO - Application Started
-2026-01-24 17:10:27,213 - INFO - Application Started
-2026-01-24 17:10:37,224 - INFO - Staging matches (Append=False)...
-2026-01-24 17:22:50,924 - INFO - Application Started
-2026-01-24 17:23:18,430 - INFO - Staging matches (Append=False)...
-2026-01-24 17:26:44,725 - INFO - Application Started
+2026-01-24 18:06:10,106 - INFO - Application Started
+2026-01-24 18:06:19,196 - INFO - Staging matches (Append=False)...
+2026-01-24 18:06:26,942 - INFO - Starting Batch Save...
+2026-01-24 18:08:36,653 - INFO - Application Started
+2026-01-24 18:12:05,720 - INFO - Application Started
+2026-01-24 18:12:18,428 - INFO - Staging matches (Append=False)...
+2026-01-24 18:12:22,749 - INFO - Starting Batch Save...
+2026-01-24 18:12:22,753 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/01 - Ik Leef Vér Carnaval.lrc
+2026-01-24 18:12:22,754 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/02 - Nen Ajoin Zèn Baal.lrc
+2026-01-24 18:12:22,755 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/03 - Den Bajord.lrc
+2026-01-24 18:12:22,756 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/04 - Mankeirt'er Een Vois.lrc
+2026-01-24 18:12:22,757 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/05 - Gemem Op De GSM.lrc
+2026-01-24 18:12:22,758 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/06 - Da Bisjtjen.lrc
+2026-01-24 18:12:22,758 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/07 - Blijft Van Mèn Hoor Af.lrc
+2026-01-24 18:12:22,759 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/08 - Montignac.lrc
+2026-01-24 18:12:22,760 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/09 - Iejl Gedétajeird.lrc
+2026-01-24 18:12:22,761 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/10 - Oilsjt Carnaval.lrc
+2026-01-24 18:12:22,762 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/11 - De Poeirten Gon Al Oepen.lrc
+2026-01-24 18:12:22,763 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/12 - Saas Oon A Leppen.lrc
+2026-01-24 18:12:22,764 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/13 - Go Van Mèn Boon.lrc
+2026-01-24 18:12:22,765 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/14 - Ka-Ka-Ka-Karnaval.lrc
+2026-01-24 18:12:22,766 - INFO - Saved metadata for 15 - &#8216;k Em Gezoepen.mp3
+2026-01-24 18:12:22,766 - INFO - Renamed to 15 - 'k Em Gezoepen.mp3
+2026-01-24 18:12:22,766 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/15 - 'k Em Gezoepen.lrc
+2026-01-24 18:12:22,767 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/16 - Abbajoot.lrc
+2026-01-24 18:12:22,768 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/17 - Dag Carnaval.lrc
+2026-01-24 18:13:46,549 - INFO - Starting Batch Save...
+2026-01-24 18:13:46,551 - INFO - Saved metadata for 01 - Ik Leef Vér Carnaval.mp3
+2026-01-24 18:14:07,033 - INFO - Staging matches (Append=False)...
+2026-01-24 18:14:11,921 - INFO - Starting Batch Save...
+2026-01-24 18:14:11,922 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/01 - Ik Leef Vér Carnaval.lrc
+2026-01-24 18:14:11,923 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/02 - Nen Ajoin Zèn Baal.lrc
+2026-01-24 18:14:11,924 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/03 - Den Bajord.lrc
+2026-01-24 18:14:11,925 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/04 - Mankeirt'er Een Vois.lrc
+2026-01-24 18:14:11,925 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/05 - Gemem Op De GSM.lrc
+2026-01-24 18:14:11,926 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/06 - Da Bisjtjen.lrc
+2026-01-24 18:14:11,927 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/07 - Blijft Van Mèn Hoor Af.lrc
+2026-01-24 18:14:11,928 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/08 - Montignac.lrc
+2026-01-24 18:14:11,929 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/09 - Iejl Gedétajeird.lrc
+2026-01-24 18:14:11,929 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/10 - Oilsjt Carnaval.lrc
+2026-01-24 18:14:11,930 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/11 - De Poeirten Gon Al Oepen.lrc
+2026-01-24 18:14:11,931 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/12 - Saas Oon A Leppen.lrc
+2026-01-24 18:14:11,932 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/13 - Go Van Mèn Boon.lrc
+2026-01-24 18:14:11,933 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/14 - Ka-Ka-Ka-Karnaval.lrc
+2026-01-24 18:14:11,934 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/15 - 'k Em Gezoepen.lrc
+2026-01-24 18:14:11,934 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/16 - Abbajoot.lrc
+2026-01-24 18:14:11,935 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/17 - Dag Carnaval.lrc
+2026-01-24 18:14:36,000 - INFO - Staging matches (Append=False)...
+2026-01-24 18:14:37,261 - INFO - Starting Batch Save...
+2026-01-24 18:14:37,262 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/01 - Ik Leef Vér Carnaval.lrc
+2026-01-24 18:14:37,263 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/02 - Nen Ajoin Zèn Baal.lrc
+2026-01-24 18:14:37,264 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/03 - Den Bajord.lrc
+2026-01-24 18:14:37,265 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/04 - Mankeirt'er Een Vois.lrc
+2026-01-24 18:14:37,266 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/05 - Gemem Op De GSM.lrc
+2026-01-24 18:14:37,267 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/06 - Da Bisjtjen.lrc
+2026-01-24 18:14:37,268 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/07 - Blijft Van Mèn Hoor Af.lrc
+2026-01-24 18:14:37,269 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/08 - Montignac.lrc
+2026-01-24 18:14:37,269 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/09 - Iejl Gedétajeird.lrc
+2026-01-24 18:14:37,270 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/10 - Oilsjt Carnaval.lrc
+2026-01-24 18:14:37,271 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/11 - De Poeirten Gon Al Oepen.lrc
+2026-01-24 18:14:37,272 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/12 - Saas Oon A Leppen.lrc
+2026-01-24 18:14:37,273 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/13 - Go Van Mèn Boon.lrc
+2026-01-24 18:14:37,274 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/14 - Ka-Ka-Ka-Karnaval.lrc
+2026-01-24 18:14:37,274 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/15 - 'k Em Gezoepen.lrc
+2026-01-24 18:14:37,275 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/16 - Abbajoot.lrc
+2026-01-24 18:14:37,276 - INFO - Created lyrics file: /home/larsdevos/Documents/Vriét 3 - Ik Leef Ver Carnaval/17 - Dag Carnaval.lrc
+2026-01-24 18:18:42,387 - INFO - Application Started
+2026-01-24 18:18:47,779 - INFO - Starting Batch Save...
+2026-01-24 18:18:47,781 - INFO - Saved metadata for 11 - De Poeirten Gon Al Oepen.mp3
+2026-01-24 18:18:56,258 - INFO - Starting Batch Save...
+2026-01-24 18:18:56,260 - INFO - Saved metadata for 17 - Dag Carnaval.mp3
+2026-01-24 18:19:14,699 - INFO - Staging matches (Append=False)...
+2026-01-24 18:19:18,188 - INFO - Starting Batch Save...
+2026-01-24 18:19:18,190 - INFO - Saved metadata for 01 - Ik Leef Vér Carnaval.mp3
+2026-01-24 18:20:04,402 - INFO - Starting Batch Save...
+2026-01-24 18:20:04,403 - INFO - Saved metadata for 01 - Ik Leef Vér Carnaval.mp3
+2026-01-24 18:20:04,405 - INFO - Saved metadata for 02 - Nen Ajoin Zèn Baal.mp3
+2026-01-24 18:20:04,406 - INFO - Saved metadata for 03 - Den Bajord.mp3
+2026-01-24 18:20:04,407 - INFO - Saved metadata for 04 - Mankeirt'er Een Vois.mp3
+2026-01-24 18:20:04,408 - INFO - Saved metadata for 05 - Gemem Op De GSM.mp3
+2026-01-24 18:20:04,409 - INFO - Saved metadata for 06 - Da Bisjtjen.mp3
+2026-01-24 18:20:04,410 - INFO - Saved metadata for 07 - Blijft Van Mèn Hoor Af.mp3
+2026-01-24 18:20:04,411 - INFO - Saved metadata for 08 - Montignac.mp3
+2026-01-24 18:20:04,412 - INFO - Saved metadata for 09 - Iejl Gedétajeird.mp3
+2026-01-24 18:20:04,413 - INFO - Saved metadata for 10 - Oilsjt Carnaval.mp3
+2026-01-24 18:20:04,415 - INFO - Saved metadata for 12 - Saas Oon A Leppen.mp3
+2026-01-24 18:20:04,416 - INFO - Saved metadata for 13 - Go Van Mèn Boon.mp3
+2026-01-24 18:20:04,417 - INFO - Saved metadata for 14 - Ka-Ka-Ka-Karnaval.mp3
+2026-01-24 18:20:04,418 - INFO - Saved metadata for 15 - 'k Em Gezoepen.mp3
+2026-01-24 18:20:04,419 - INFO - Saved metadata for 16 - Abbajoot.mp3
+2026-01-24 18:20:26,516 - INFO - Application Started
+2026-01-24 18:22:13,761 - INFO - Application Started

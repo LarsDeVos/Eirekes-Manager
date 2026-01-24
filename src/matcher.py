@@ -6,14 +6,15 @@ from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdi
 from PyQt6.QtCore import Qt, pyqtSignal
 from scraper import AlbumScraper
 from styles import DARK_THEME
+# FIX: Import from the renamed file 'app_translations'
+from app_translations import tr
 
 class WebMatcherDialog(QDialog):
-    # Signal: (List of file paths, List of track data, Album Info, OptionsDict)
     matches_confirmed = pyqtSignal(list, list, list, dict)
 
     def __init__(self, current_files, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Web Data Matcher & Editor")
+        self.setWindowTitle(tr("matcher_title"))
         self.resize(1100, 800)
         self.scraper = AlbumScraper()
         
@@ -27,11 +28,11 @@ class WebMatcherDialog(QDialog):
         layout = QVBoxLayout(self)
         
         # --- 1. Fetch Section ---
-        top_group = QGroupBox("1. Fetch Web Data")
+        top_group = QGroupBox(tr("fetch_group"))
         top_layout = QHBoxLayout()
         self.url_input = QLineEdit()
-        self.url_input.setPlaceholderText("Paste Album URL here...")
-        btn_fetch = QPushButton("Fetch")
+        self.url_input.setPlaceholderText(tr("url_placeholder"))
+        btn_fetch = QPushButton(tr("fetch_btn"))
         btn_fetch.clicked.connect(self.run_fetch)
         top_layout.addWidget(QLabel("URL:"))
         top_layout.addWidget(self.url_input)
@@ -39,18 +40,18 @@ class WebMatcherDialog(QDialog):
         top_group.setLayout(top_layout)
 
         # --- Options Section ---
-        opt_group = QGroupBox("Apply Options")
+        opt_group = QGroupBox(tr("options_group"))
         opt_layout = QHBoxLayout()
         
-        self.chk_title = QCheckBox("Title")
+        self.chk_title = QCheckBox(tr("chk_title"))
         self.chk_title.setChecked(True)
-        self.chk_artist = QCheckBox("Artist")
+        self.chk_artist = QCheckBox(tr("chk_artist"))
         self.chk_artist.setChecked(True)
-        self.chk_track = QCheckBox("Track #")
+        self.chk_track = QCheckBox(tr("chk_track"))
         self.chk_track.setChecked(True)
-        self.chk_rename = QCheckBox("Rename File")
+        self.chk_rename = QCheckBox(tr("chk_rename"))
         self.chk_rename.setChecked(True)
-        self.chk_lyrics = QCheckBox("Save Lyrics (.lrc)")
+        self.chk_lyrics = QCheckBox(tr("chk_lyrics"))
         self.chk_lyrics.setChecked(True)
         
         opt_layout.addWidget(self.chk_title)
@@ -64,13 +65,13 @@ class WebMatcherDialog(QDialog):
         layout.addWidget(opt_group)
 
         # --- 2. Match Section ---
-        match_group = QGroupBox("2. Align & Edit Data")
+        match_group = QGroupBox(tr("align_group"))
         match_layout = QVBoxLayout()
         splitter = QSplitter(Qt.Orientation.Horizontal)
         
         left_container = QWidget()
         left_box = QVBoxLayout(left_container)
-        left_box.addWidget(QLabel("YOUR FILES (Drag to reorder):"))
+        left_box.addWidget(QLabel(tr("your_files")))
         self.file_list = QListWidget()
         self.file_list.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
         for f_path in self.local_files:
@@ -81,13 +82,13 @@ class WebMatcherDialog(QDialog):
         
         right_container = QWidget()
         right_box = QVBoxLayout(right_container)
-        self.lbl_web_info = QLabel("WEB TRACKS (Editable):")
+        self.lbl_web_info = QLabel(tr("web_tracks"))
         right_box.addWidget(self.lbl_web_info)
         
         self.web_table = QTableWidget()
-        self.web_table.setColumnCount(4) # Added hidden column for Lyrics
-        self.web_table.setHorizontalHeaderLabels(["#", "Title", "Artist", "Lyrics"])
-        self.web_table.setColumnHidden(3, True) # Hide Lyrics Column
+        self.web_table.setColumnCount(4)
+        self.web_table.setHorizontalHeaderLabels(["#", tr("lbl_title"), tr("lbl_artist"), "Lyrics"])
+        self.web_table.setColumnHidden(3, True)
         
         header = self.web_table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
@@ -108,12 +109,12 @@ class WebMatcherDialog(QDialog):
 
         # --- 3. Buttons ---
         btn_box = QHBoxLayout()
-        self.btn_apply = QPushButton("✅ Apply Matches")
+        self.btn_apply = QPushButton(tr("apply_btn"))
         self.btn_apply.setStyleSheet("background-color: #28a745; font-weight: bold; padding: 10px;")
         self.btn_apply.setEnabled(False)
         self.btn_apply.clicked.connect(self.confirm_matches)
         
-        btn_cancel = QPushButton("Cancel")
+        btn_cancel = QPushButton(tr("cancel_btn"))
         btn_cancel.clicked.connect(self.reject)
         
         btn_box.addStretch()
@@ -126,39 +127,29 @@ class WebMatcherDialog(QDialog):
     def run_fetch(self):
         url = self.url_input.text().strip()
         if not url: return
-        
 
         self.web_table.setRowCount(0)
-        self.btn_apply.setText("Fetching... Please Wait")
+        self.btn_apply.setText(tr("fetching_wait"))
         self.btn_apply.setEnabled(False)
         QApplication.processEvents()
         
-        # Scraper returns: array_1d (Album), array_2d (Tracks)
         array_1d, array_2d = self.scraper.fetch_data(url)
         
-        self.btn_apply.setText("✅ Apply Matches")
+        self.btn_apply.setText(tr("apply_btn"))
         if not array_1d: return
         
         self.scraped_album = array_1d
-        info = f"{array_1d[0]} ({array_1d[2]})" if len(array_1d) > 2 else "Unknown Album"
-        self.lbl_web_info.setText(f"WEB TRACKS: {info}")
+        info = f"{array_1d[0]} ({array_1d[2]})" if len(array_1d) > 2 else tr("unknown_album")
+        self.lbl_web_info.setText(f"{tr('web_tracks')} {info}")
         
         self.web_table.setRowCount(len(array_2d))
         for i, track in enumerate(array_2d):
-            # track = [Num, Title, Artist, Lyrics]
             print("TRACK DATA:", track)
-            # Num
             item_num = QTableWidgetItem(str(track[0]))
             item_num.setFlags(item_num.flags() ^ Qt.ItemFlag.ItemIsEditable)
             self.web_table.setItem(i, 0, item_num)
-            
-            # Title
             self.web_table.setItem(i, 1, QTableWidgetItem(track[1]))
-            
-            # Artist
             self.web_table.setItem(i, 2, QTableWidgetItem(track[2]))
-            
-            # Lyrics (Hidden)
             lyrics = track[3] if len(track) > 3 else ""
             self.web_table.setItem(i, 3, QTableWidgetItem(lyrics))
             
@@ -173,15 +164,12 @@ class WebMatcherDialog(QDialog):
         final_track_data = []
         rows = self.web_table.rowCount()
         for i in range(rows):
-            # Gather data from table
             t_num = self.web_table.item(i, 0).text()
             t_title = self.web_table.item(i, 1).text()
             t_artist = self.web_table.item(i, 2).text()
             t_lyrics = self.web_table.item(i, 3).text()
-            
             final_track_data.append([t_num, t_title, t_artist, t_lyrics])
             
-        # Gather Options
         options = {
             'title': self.chk_title.isChecked(),
             'artist': self.chk_artist.isChecked(),

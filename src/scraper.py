@@ -1,50 +1,59 @@
 import requests
 import re
-
 from lyrics_scraper import LyricsScraper
-
 
 class AlbumScraper:
     def __init__(self):
         self.lyrics_scraper = LyricsScraper()
 
     # =========================================================
-    # PUBLIC ENTRY POINT (used by matcher.py)
+    # PUBLIC ENTRY POINT
     # =========================================================
     def fetch_data(self, album_url):
-        """
-        Returns:
-            album_data: list (1D)  -> album title, artist, year, ...
-            tracks:     list (2D)  -> [track_no, title, artist, lyrics]
-        """
         album_data, tracks = self.fetch_album_metadata(album_url)
 
         if not tracks:
             return album_data, tracks
 
-        # Fetch track URLs from album page
-        lyrics_map = self.lyrics_scraper.get_lyrics_map_from_album(album_url)
+        # --- DEBUG LOGGING START ---
+        print(f"\n--- DEBUG: Fetching lyrics for {album_url} ---")
+        try:
+            lyrics_map = self.lyrics_scraper.get_lyrics_map_from_album(album_url)
+            print(f"DEBUG: Lyrics map size: {len(lyrics_map)}")
+            if len(lyrics_map) > 0:
+                print(f"DEBUG: First 5 keys in map: {list(lyrics_map.keys())[:5]}")
+            else:
+                print("DEBUG: Lyrics map is EMPTY. This means lyrics_scraper.py found no links.")
+        except Exception as e:
+            print(f"DEBUG: Error fetching lyrics map: {e}")
+            lyrics_map = {}
+        # --- DEBUG LOGGING END ---
 
         for track in tracks:
-            # Normalize track title
-            track_title = track[1].lower().strip()
-
-            lyrics = lyrics_map.get(track_title, "")
-
-            # Force structure
+            # Force structure (Track #, Title, Artist, Lyrics)
             track[:] = track[:3]
             while len(track) < 4:
                 track.append("")
 
-            track[3] = lyrics
+            if len(track) > 1:
+                original_title = track[1]
+                # Normalize using the SAME function as the lyrics scraper
+                track_title = self.lyrics_scraper.normalize_title(original_title)
+                
+                lyrics = lyrics_map.get(track_title, "")
+                track[3] = lyrics
 
-
-
+                # --- DEBUG MATCHING ---
+                status = "FOUND" if lyrics else "MISSING"
+                # Only print missing ones to reduce noise, or all for thoroughness
+                print(f"DEBUG: Track '{original_title}' -> Norm: '{track_title}' | Status: {status}")
+            else:
+                track[3] = ""
 
         return album_data, tracks
 
     # =========================================================
-    # ALBUM METADATA (your original logic, untouched)
+    # ALBUM METADATA
     # =========================================================
     def fetch_album_metadata(self, url):
         raw_data = self.extract_and_clean_td_content(url)
@@ -103,6 +112,8 @@ class AlbumScraper:
             "&#8211;": "-",
             "&#8212;": "—",
             "&#8230;": "...",
+            # Added common missing entity if needed
+            "&#8216;": "'", 
         }
 
         corrected = re.sub(
@@ -126,11 +137,6 @@ class AlbumScraper:
     # DATA STRUCTURING
     # =========================================================
     def process_string(self, input_string):
-        """
-        Converts scraped text into:
-            array_1d: album metadata
-            array_2d: list of tracks
-        """
         all_elements = []
         for line in input_string:
             all_elements.extend(line.splitlines())
@@ -139,6 +145,17 @@ class AlbumScraper:
             return [], []
 
         array_1d = all_elements[:5]
+
+        # --- FIX: YEAR VALIDATION ---
+        # If the year is not a valid 4-digit number (e.g. "Unknown Year"), clear it.
+        # This prevents the "Could not extract year" crash in music_tag.
+        if len(array_1d) > 2:
+            year_val = array_1d[2].strip()
+            # Simple check: must be 4 digits
+            if not re.match(r'^\d{4}$', year_val):
+                print(f"DEBUG: Invalid year detected '{year_val}'. Clearing to prevent crash.")
+                array_1d[2] = "" 
+
         array_2d = [[]]
 
         for element in all_elements[5:]:

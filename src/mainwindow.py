@@ -6,18 +6,25 @@ from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                              QLabel, QLineEdit, QPushButton, QFileDialog, 
                              QListWidget, QAbstractItemView, QGroupBox, 
                              QMessageBox, QSplitter, QFormLayout, QScrollArea, 
-                             QListWidgetItem, QGraphicsDropShadowEffect)
+                             QListWidgetItem, QGraphicsDropShadowEffect, QMenuBar, QMenu)
 from PyQt6.QtCore import Qt, QTimer, QSettings
-from PyQt6.QtGui import QPixmap, QKeySequence, QShortcut, QColor, QBrush
+from PyQt6.QtGui import QPixmap, QKeySequence, QShortcut, QColor, QBrush, QAction
 
 from matcher import WebMatcherDialog
 from csv_matcher import CsvMatcherDialog
 from styles import DARK_THEME
+from app_translations import tr, set_language, get_current_language
 
 class MusicTaggerApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Music Metadata Master")
+        self.settings = QSettings("OilsjterseLiekes", "MetadataMaster")
+        
+        # Load Language Preference
+        saved_lang = self.settings.value("language", "en")
+        set_language(saved_lang)
+
+        self.setWindowTitle(tr("app_title"))
         self.resize(1200, 800)
         self.cover_image_path = None
         self.pending_changes = {} 
@@ -29,8 +36,6 @@ class MusicTaggerApp(QMainWindow):
             filemode='a'
         )
         logging.info("Application Started")
-
-        self.settings = QSettings("OilsjterseLiekes", "MetadataMaster")
 
         self.tag_map = {
             "Title": "title", "Artist": "artist", "Album": "album",
@@ -53,25 +58,37 @@ class MusicTaggerApp(QMainWindow):
         main_layout.setContentsMargins(15, 15, 15, 15)
         main_layout.setSpacing(10)
 
+        # --- MENU BAR (Language) ---
+        menu_bar = self.menuBar()
+        lang_menu = menu_bar.addMenu("Language")
+        
+        action_en = QAction("English", self)
+        action_en.triggered.connect(lambda: self.change_language("en"))
+        lang_menu.addAction(action_en)
+        
+        action_nl = QAction("Nederlands", self)
+        action_nl.triggered.connect(lambda: self.change_language("nl"))
+        lang_menu.addAction(action_nl)
+
         # --- TOP TOOLBAR ---
         toolbar = QHBoxLayout()
         
-        btn_web = QPushButton("🌍 Web Matcher")
-        btn_web.setStyleSheet("background-color: #007bff; font-weight: bold; padding: 10px 15px;")
-        btn_web.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_web.clicked.connect(self.open_matcher_dialog)
+        self.btn_web = QPushButton()
+        self.btn_web.setStyleSheet("background-color: #007bff; font-weight: bold; padding: 10px 15px;")
+        self.btn_web.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_web.clicked.connect(self.open_matcher_dialog)
 
-        btn_csv = QPushButton("📊 Import CSV")
-        btn_csv.setStyleSheet("background-color: #6f42c1; font-weight: bold; padding: 10px 15px;")
-        btn_csv.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_csv.clicked.connect(self.open_csv_dialog)
+        self.btn_csv = QPushButton()
+        self.btn_csv.setStyleSheet("background-color: #6f42c1; font-weight: bold; padding: 10px 15px;")
+        self.btn_csv.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.btn_csv.clicked.connect(self.open_csv_dialog)
         
-        lbl_hint = QLabel("Matches are staged in CYAN. Ctrl+S to Commit.")
-        lbl_hint.setStyleSheet("color: #aaa; font-style: italic; margin-left: 10px;")
+        self.lbl_hint = QLabel()
+        self.lbl_hint.setStyleSheet("color: #aaa; font-style: italic; margin-left: 10px;")
 
-        toolbar.addWidget(btn_web)
-        toolbar.addWidget(btn_csv)
-        toolbar.addWidget(lbl_hint)
+        toolbar.addWidget(self.btn_web)
+        toolbar.addWidget(self.btn_csv)
+        toolbar.addWidget(self.lbl_hint)
         toolbar.addStretch()
         main_layout.addLayout(toolbar, 0)
 
@@ -80,21 +97,21 @@ class MusicTaggerApp(QMainWindow):
         splitter.setHandleWidth(2)
         
         # 1. LEFT: File List
-        left_group = QGroupBox("Local Files")
+        self.left_group = QGroupBox()
         left_layout = QVBoxLayout()
-        btn_load_folder = QPushButton("📂 Open Folder")
-        btn_load_folder.clicked.connect(self.open_folder_dialog)
+        self.btn_load_folder = QPushButton()
+        self.btn_load_folder.clicked.connect(self.open_folder_dialog)
         
         self.file_list_widget = QListWidget()
         self.file_list_widget.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self.file_list_widget.itemSelectionChanged.connect(self.on_selection_changed)
         
-        left_layout.addWidget(btn_load_folder)
+        left_layout.addWidget(self.btn_load_folder)
         left_layout.addWidget(self.file_list_widget)
-        left_group.setLayout(left_layout)
+        self.left_group.setLayout(left_layout)
         
         # 2. RIGHT: Manual Edit
-        right_group = QGroupBox("Metadata Editor")
+        self.right_group = QGroupBox()
         right_layout = QVBoxLayout()
         
         scroll = QScrollArea()
@@ -104,24 +121,30 @@ class MusicTaggerApp(QMainWindow):
         self.form_layout = QFormLayout(form_widget)
         
         self.meta_fields = {}
+        self.field_labels = {} # Store label widgets to update text later
+        
         for label, tag_key in self.tag_map.items():
             le = QLineEdit()
             le.textEdited.connect(self.on_manual_edit) 
             self.meta_fields[label] = le
-            self.form_layout.addRow(label, le)
+            
+            # Create Label manually to store reference
+            lbl_widget = QLabel()
+            self.field_labels[tag_key] = lbl_widget
+            self.form_layout.addRow(lbl_widget, le)
             
         scroll.setWidget(form_widget)
         right_layout.addWidget(scroll, stretch=1)
 
         # Cover Art
         cover_container = QVBoxLayout()
-        self.lbl_cover_image = QLabel("No Art")
+        self.lbl_cover_image = QLabel()
         self.lbl_cover_image.setFixedSize(180, 180)
         self.lbl_cover_image.setStyleSheet("border: 2px dashed #555; border-radius: 8px; background-color: #222;")
         self.lbl_cover_image.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        btn_select_cover = QPushButton("🖼️ Choose Art")
-        btn_select_cover.clicked.connect(self.select_cover)
+        self.btn_select_cover = QPushButton()
+        self.btn_select_cover.clicked.connect(self.select_cover)
         
         cover_center = QHBoxLayout()
         cover_center.addStretch()
@@ -129,23 +152,51 @@ class MusicTaggerApp(QMainWindow):
         cover_center.addStretch()
         
         cover_container.addLayout(cover_center)
-        cover_container.addWidget(btn_select_cover)
+        cover_container.addWidget(self.btn_select_cover)
         right_layout.addLayout(cover_container)
 
         # Save Button
-        self.btn_save_all = QPushButton("💾 Save ALL Pending Changes (Ctrl+S)")
+        self.btn_save_all = QPushButton()
         self.btn_save_all.setStyleSheet("background-color: #28a745; color: white; font-weight: bold; padding: 12px; border-radius: 6px;")
         self.btn_save_all.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_save_all.clicked.connect(self.save_all_changes)
         
         right_layout.addSpacing(10)
         right_layout.addWidget(self.btn_save_all)
-        right_group.setLayout(right_layout)
+        self.right_group.setLayout(right_layout)
 
-        splitter.addWidget(left_group)
-        splitter.addWidget(right_group)
+        splitter.addWidget(self.left_group)
+        splitter.addWidget(self.right_group)
         splitter.setSizes([500, 400])
         main_layout.addWidget(splitter, 1)
+        
+        # Apply texts
+        self.update_ui_texts()
+
+    def change_language(self, lang_code):
+        set_language(lang_code)
+        self.settings.setValue("language", lang_code)
+        self.update_ui_texts()
+
+    def update_ui_texts(self):
+        """Refreshes all visible text based on current language."""
+        self.setWindowTitle(tr("app_title"))
+        self.btn_web.setText(tr("web_matcher"))
+        self.btn_csv.setText(tr("import_csv"))
+        self.lbl_hint.setText(tr("matches_hint"))
+        self.left_group.setTitle(tr("local_files"))
+        self.btn_load_folder.setText(tr("open_folder"))
+        self.right_group.setTitle(tr("metadata_editor"))
+        self.btn_select_cover.setText(tr("choose_art"))
+        self.btn_save_all.setText(tr("save_all"))
+        if self.lbl_cover_image.text() in ["No Art", "Geen Cover"]:
+            self.lbl_cover_image.setText(tr("no_art"))
+            
+        # Update Form Labels
+        for tag_key, lbl_widget in self.field_labels.items():
+            # key: "lbl_title", "lbl_artist"...
+            trans_key = f"lbl_{tag_key}"
+            lbl_widget.setText(tr(trans_key))
 
     # --- MATCHERS ---
     def open_matcher_dialog(self):
@@ -163,7 +214,6 @@ class MusicTaggerApp(QMainWindow):
         dialog.exec()
         
     def stage_matches_csv(self, files, data, album, append):
-        # Default options for CSV (Enable everything)
         default_opts = {'title': True, 'artist': True, 'track': True, 'rename': True, 'lyrics': False}
         self.stage_matches(files, data, album, default_opts, append)
 
@@ -185,7 +235,9 @@ class MusicTaggerApp(QMainWindow):
             if 'year' in album_common: file_data['year'] = album_common['year']
             file_data['genre'] = "Carnaval"
             
-            # Store special options
+            # iTunes Comment Fix (Kept as requested, though you can disable)
+            file_data['comment'] = ""
+            
             if options.get('rename'): file_data['_rename'] = True
             
             if i < len(track_data):
@@ -203,20 +255,15 @@ class MusicTaggerApp(QMainWindow):
                     
                 if options.get('lyrics') and len(track_info) > 3:
                     file_data['_lyrics'] = track_info[3]
-
-                if options.get('lyrics'):
-                    print("LYRICS STAGED:", bool(track_info[3]))
             else:
                 if options.get('track'):
                     file_data['tracknumber'] = str(i+1)
             
             self.pending_changes[file_path] = file_data
             
-            # Update Visuals
             for j in range(self.file_list_widget.count()):
                 item = self.file_list_widget.item(j)
                 if item.data(Qt.ItemDataRole.UserRole) == file_path:
-                    # Rename Preview
                     if options.get('rename'):
                         clean_title = self.sanitize_filename(file_data.get('title', 'Unknown'))
                         if not clean_title: clean_title = "Track"
@@ -235,12 +282,12 @@ class MusicTaggerApp(QMainWindow):
                     item.setForeground(QBrush(QColor("#00ffff")))
                     break
 
-        self.show_banner(f"Staged {len(self.pending_changes)} files. Press Ctrl+S to Commit.")
+        self.show_banner(tr("staged_count").format(len(self.pending_changes)))
 
     # --- SAVING ---
     def save_all_changes(self):
         if not self.pending_changes:
-            self.show_banner("No changes staged to save.", is_error=True)
+            self.show_banner(tr("no_changes"), is_error=True)
             return
 
         logging.info("Starting Batch Save...")
@@ -259,7 +306,7 @@ class MusicTaggerApp(QMainWindow):
                 for tag, new_val in changes.items():
                     if tag.startswith('_'): continue 
                     
-                    if tag in ['tracknumber', 'year', 'discnumber']:
+                    if tag in ['tracknumber', 'year', 'discnumber', 'comment']:
                         if new_val == "": 
                             if f[tag] is not None and str(f[tag]) != "":
                                 f[tag] = None
@@ -278,7 +325,7 @@ class MusicTaggerApp(QMainWindow):
                 
                 if file_dirty:
                     f.save()
-                    logging.info(f"Saved metadata for {os.path.basename(file_path)}")
+                    logging.info(tr("saved_log").format(os.path.basename(file_path)))
 
                 new_title = str(f['title'])
                 track_num = str(f['tracknumber'])
@@ -294,23 +341,21 @@ class MusicTaggerApp(QMainWindow):
                 new_filename = f"{t_str} - {clean_title}{ext}"
                 new_path = os.path.join(folder, new_filename)
                 
-                # Rename if requested
                 if changes.get('_rename'):
                     if file_path != new_path:
                         os.rename(file_path, new_path)
-                        logging.info(f"Renamed to {new_filename}")
+                        logging.info(tr("renamed_log").format(new_filename))
                         file_path = new_path 
                 
-                # Save Lyrics
                 if '_lyrics' in changes and changes['_lyrics']:
                     lrc_path = os.path.splitext(file_path)[0] + ".lrc"
                     with open(lrc_path, 'w', encoding='utf-8') as lrc_file:
                         lrc_file.write(changes['_lyrics'])
-                    logging.info(f"Created lyrics file: {lrc_path}")
+                    logging.info(tr("lyrics_log").format(lrc_path))
 
                 count += 1
             except Exception as e:
-                err_msg = f"Error processing {os.path.basename(file_path)}: {e}"
+                err_msg = tr("processing_error").format(os.path.basename(file_path), e)
                 logging.error(err_msg)
                 errors.append(err_msg)
 
@@ -319,9 +364,9 @@ class MusicTaggerApp(QMainWindow):
             self.reload_file_list(os.path.dirname(paths_to_process[0]))
 
         if count > 0:
-            self.show_banner(f"Processed {count} files successfully!")
+            self.show_banner(tr("save_success").format(count))
         if errors:
-            self.show_banner(f"Errors with {len(errors)} files.", is_error=True)
+            self.show_banner(tr("save_error").format(len(errors)), is_error=True)
 
     # --- HELPERS ---
     def get_current_files(self):
@@ -330,7 +375,7 @@ class MusicTaggerApp(QMainWindow):
             item = self.file_list_widget.item(i)
             current_files.append(item.data(Qt.ItemDataRole.UserRole))
         if not current_files:
-            self.show_banner("Please load a folder with music files first.", is_error=True)
+            self.show_banner(tr("please_load"), is_error=True)
             return None
         return current_files
     
@@ -347,7 +392,7 @@ class MusicTaggerApp(QMainWindow):
                 self.meta_fields[label].setText(data.get(tag_key, ""))
             self.load_cover_from_file(path)
         else:
-            self.lbl_cover_image.setText("Multiple Selected")
+            self.lbl_cover_image.setText(tr("multiple_selected"))
             self.lbl_cover_image.setPixmap(QPixmap())
             first_path = selected_items[0].data(Qt.ItemDataRole.UserRole)
             common_values = self.get_effective_metadata(first_path)
@@ -407,9 +452,9 @@ class MusicTaggerApp(QMainWindow):
                 pixmap.loadFromData(img_data)
                 self.lbl_cover_image.setPixmap(pixmap.scaled(180, 180, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
             else:
-                self.lbl_cover_image.setText("No Art")
+                self.lbl_cover_image.setText(tr("no_art"))
                 self.lbl_cover_image.setPixmap(QPixmap())
-        except: self.lbl_cover_image.setText("No Art")
+        except: self.lbl_cover_image.setText(tr("no_art"))
 
     def select_cover(self):
         start_dir = self.settings.value("last_folder", os.path.expanduser("~"))
@@ -421,7 +466,7 @@ class MusicTaggerApp(QMainWindow):
 
     def clear_fields(self):
         for le in self.meta_fields.values(): le.clear(); le.setPlaceholderText("")
-        self.lbl_cover_image.setText("No Art"); self.lbl_cover_image.setPixmap(QPixmap())
+        self.lbl_cover_image.setText(tr("no_art")); self.lbl_cover_image.setPixmap(QPixmap())
         
     def sanitize_filename(self, name):
         return re.sub(r'[<>:"/\\|?*]', '', name).strip()
