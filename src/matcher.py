@@ -6,10 +6,10 @@ from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdi
 from PyQt6.QtCore import Qt, pyqtSignal
 from scraper import AlbumScraper
 from styles import DARK_THEME
-# FIX: Import from the renamed file 'app_translations'
 from app_translations import tr
 
 class WebMatcherDialog(QDialog):
+    # Signal: (List of file paths, List of track data, Album Info, OptionsDict)
     matches_confirmed = pyqtSignal(list, list, list, dict)
 
     def __init__(self, current_files, parent=None):
@@ -85,15 +85,17 @@ class WebMatcherDialog(QDialog):
         self.lbl_web_info = QLabel(tr("web_tracks"))
         right_box.addWidget(self.lbl_web_info)
         
+        # TABLE COLUMNS: [#, Title, Artist, Lyrics (Hidden), Comment/Original]
         self.web_table = QTableWidget()
-        self.web_table.setColumnCount(4)
-        self.web_table.setHorizontalHeaderLabels(["#", tr("lbl_title"), tr("lbl_artist"), "Lyrics"])
-        self.web_table.setColumnHidden(3, True)
+        self.web_table.setColumnCount(5) 
+        self.web_table.setHorizontalHeaderLabels(["#", tr("lbl_title"), tr("lbl_artist"), "Lyrics", tr("lbl_comment")])
+        self.web_table.setColumnHidden(3, True) # Hide Lyrics
         
         header = self.web_table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         header.setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch) # Comment Column
         
         self.web_table.verticalHeader().setVisible(False)
         self.web_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
@@ -133,6 +135,7 @@ class WebMatcherDialog(QDialog):
         self.btn_apply.setEnabled(False)
         QApplication.processEvents()
         
+        # Scraper returns: [Num, Title, Artist, Lyrics, Comment]
         array_1d, array_2d = self.scraper.fetch_data(url)
         
         self.btn_apply.setText(tr("apply_btn"))
@@ -145,13 +148,24 @@ class WebMatcherDialog(QDialog):
         self.web_table.setRowCount(len(array_2d))
         for i, track in enumerate(array_2d):
             print("TRACK DATA:", track)
+            # 0: Num
             item_num = QTableWidgetItem(str(track[0]))
             item_num.setFlags(item_num.flags() ^ Qt.ItemFlag.ItemIsEditable)
             self.web_table.setItem(i, 0, item_num)
+            
+            # 1: Title
             self.web_table.setItem(i, 1, QTableWidgetItem(track[1]))
+            
+            # 2: Artist
             self.web_table.setItem(i, 2, QTableWidgetItem(track[2]))
+            
+            # 3: Lyrics
             lyrics = track[3] if len(track) > 3 else ""
             self.web_table.setItem(i, 3, QTableWidgetItem(lyrics))
+            
+            # 4: Comment (Original)
+            comment = track[4] if len(track) > 4 else ""
+            self.web_table.setItem(i, 4, QTableWidgetItem(comment))
             
         self.btn_apply.setEnabled(True)
 
@@ -168,7 +182,9 @@ class WebMatcherDialog(QDialog):
             t_title = self.web_table.item(i, 1).text()
             t_artist = self.web_table.item(i, 2).text()
             t_lyrics = self.web_table.item(i, 3).text()
-            final_track_data.append([t_num, t_title, t_artist, t_lyrics])
+            t_comment = self.web_table.item(i, 4).text()
+            
+            final_track_data.append([t_num, t_title, t_artist, t_lyrics, t_comment])
             
         options = {
             'title': self.chk_title.isChecked(),

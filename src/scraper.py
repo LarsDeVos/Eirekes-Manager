@@ -10,45 +10,73 @@ class AlbumScraper:
     # PUBLIC ENTRY POINT
     # =========================================================
     def fetch_data(self, album_url):
+        print(f"--- DEBUG: Starting fetch_data for {album_url} ---")
         album_data, tracks = self.fetch_album_metadata(album_url)
 
         if not tracks:
+            print("--- DEBUG: No tracks found in metadata ---")
             return album_data, tracks
 
-        # --- DEBUG LOGGING START ---
-        print(f"\n--- DEBUG: Fetching lyrics for {album_url} ---")
+        # Fetch track URLs/Lyrics map
         try:
             lyrics_map = self.lyrics_scraper.get_lyrics_map_from_album(album_url)
-            print(f"DEBUG: Lyrics map size: {len(lyrics_map)}")
-            if len(lyrics_map) > 0:
-                print(f"DEBUG: First 5 keys in map: {list(lyrics_map.keys())[:5]}")
-            else:
-                print("DEBUG: Lyrics map is EMPTY. This means lyrics_scraper.py found no links.")
         except Exception as e:
             print(f"DEBUG: Error fetching lyrics map: {e}")
             lyrics_map = {}
-        # --- DEBUG LOGGING END ---
 
         for track in tracks:
-            # Force structure (Track #, Title, Artist, Lyrics)
-            track[:] = track[:3]
-            while len(track) < 4:
-                track.append("")
-
+            comment = ""
+            
+            # Iterate backwards to find the special tag
+            for i in range(len(track) - 1, -1, -1):
+                if "||ORIGINAL||" in track[i]:
+                    # FIX: Split the string instead of replacing/popping blindly.
+                    # This handles cases where Artist and Tag are on the same line.
+                    # e.g. "Artist Name ||ORIGINAL|| Song Name"
+                    parts = track[i].split("||ORIGINAL||")
+                    
+                    # Everything AFTER the tag is the comment
+                    if len(parts) > 1:
+                        comment = parts[1].strip()
+                    
+                    # Everything BEFORE the tag is kept (e.g. the Artist)
+                    pre_content = parts[0].strip()
+                    
+                    if pre_content:
+                        # Update the list element to just the pre-content
+                        track[i] = pre_content
+                        # If the comment was empty in the split (e.g. tag at end of line), 
+                        # check the NEXT element in the list
+                        if not comment and i + 1 < len(track):
+                            comment = track[i+1].strip()
+                            track.pop(i+1)
+                    else:
+                        # If nothing before the tag, remove the whole element
+                        track.pop(i)
+                        # If comment still empty, check next element
+                        if not comment and i < len(track):
+                            comment = track[i].strip()
+                            track.pop(i)
+                            
+                    break
+            
+            # --- Normalize & Match Lyrics ---
             if len(track) > 1:
                 original_title = track[1]
-                # Normalize using the SAME function as the lyrics scraper
                 track_title = self.lyrics_scraper.normalize_title(original_title)
-                
                 lyrics = lyrics_map.get(track_title, "")
-                track[3] = lyrics
-
-                # --- DEBUG MATCHING ---
-                status = "FOUND" if lyrics else "MISSING"
-                # Only print missing ones to reduce noise, or all for thoroughness
-                print(f"DEBUG: Track '{original_title}' -> Norm: '{track_title}' | Status: {status}")
             else:
-                track[3] = ""
+                lyrics = ""
+
+            # --- Force Structure: [Num, Title, Artist, Lyrics, Comment] ---
+            # 1. Ensure we have at least 3 elements (Num, Title, Artist)
+            track[:] = track[:3]
+            while len(track) < 3:
+                track.append("")
+            
+            # 2. Add Lyrics and Comment
+            track.append(lyrics)
+            track.append(comment)
 
         return album_data, tracks
 
@@ -90,7 +118,13 @@ class AlbumScraper:
                     break
 
                 td_content = html_content[start_index:end_index + 5]
-                td_content = re.sub('<[^>]+>', '\n', td_content)
+                
+                # FIX: 
+                # 1. Replace block tags (<br>, <p>, <div>) with NEWLINE to force splitting
+                td_content = re.sub(r'<(br|p|div)[^>]*>', '\n', td_content, flags=re.IGNORECASE)
+                # 2. Replace inline tags (<strong>, <span>) with SPACE to keep "Label: Value" together
+                td_content = re.sub(r'<[^>]+>', ' ', td_content)
+                
                 cleaned_content.append(td_content.strip())
 
                 start_index = end_index + 5
@@ -112,8 +146,8 @@ class AlbumScraper:
             "&#8211;": "-",
             "&#8212;": "—",
             "&#8230;": "...",
-            # Added common missing entity if needed
-            "&#8216;": "'", 
+            "&#8216;": "'",
+            "&nbsp;": " " 
         }
 
         corrected = re.sub(
@@ -121,9 +155,16 @@ class AlbumScraper:
             lambda m: char_map.get(m.group(0), m.group(0)),
             text
         )
-
+        
+        corrected = corrected.replace("&nbsp;", " ")
         corrected = corrected.replace("Tekst:", "")
-        corrected = corrected.replace("Origineel nummer:", "")
+        
+        # Tag insertion - Handle variations in spacing
+        if "Origineel nummer:" in corrected:
+            corrected = corrected.replace("Origineel nummer:", "||ORIGINAL||")
+        elif "Origineel nummer :" in corrected:
+            corrected = corrected.replace("Origineel nummer :", "||ORIGINAL||")
+        
         corrected = corrected.strip()
 
         lines = [line for line in corrected.splitlines() if line.strip()]
@@ -146,28 +187,25 @@ class AlbumScraper:
 
         array_1d = all_elements[:5]
 
-        # --- FIX: YEAR VALIDATION ---
-        # If the year is not a valid 4-digit number (e.g. "Unknown Year"), clear it.
-        # This prevents the "Could not extract year" crash in music_tag.
+        # Year Validation
         if len(array_1d) > 2:
             year_val = array_1d[2].strip()
-            # Simple check: must be 4 digits
             if not re.match(r'^\d{4}$', year_val):
-                print(f"DEBUG: Invalid year detected '{year_val}'. Clearing to prevent crash.")
                 array_1d[2] = "" 
 
         array_2d = [[]]
 
         for element in all_elements[5:]:
+            element = element.strip()
+            if not element: continue
+
             try:
-                float(element)  # track number
+                # If it's a number, it's likely a new track index
+                float(element) 
                 array_2d.append([element])
             except ValueError:
                 if array_2d[-1]:
-                    if len(array_2d[-1]) < 5:
-                        array_2d[-1].append(element)
-                    else:
-                        array_2d.append([element])
+                    array_2d[-1].append(element)
                 else:
                     array_2d[-1].append(element)
 

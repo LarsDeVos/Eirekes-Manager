@@ -2,8 +2,6 @@ import os
 import re
 import logging
 import music_tag
-import sys # Add this if not present
-from pathlib import Path # Add this
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
                              QLabel, QLineEdit, QPushButton, QFileDialog, 
                              QListWidget, QAbstractItemView, QGroupBox, 
@@ -31,13 +29,8 @@ class MusicTaggerApp(QMainWindow):
         self.cover_image_path = None
         self.pending_changes = {} 
 
-        # Determine a safe path for the log file (User's Home Folder)
-        log_dir = os.path.join(os.path.expanduser("~"), "EirekesManagerLogs")
-        os.makedirs(log_dir, exist_ok=True)
-        log_file = os.path.join(log_dir, "application.log")
-
         logging.basicConfig(
-            filename=log_file, 
+            filename='application.log', 
             level=logging.INFO, 
             format='%(asctime)s - %(levelname)s - %(message)s',
             filemode='a'
@@ -79,14 +72,14 @@ class MusicTaggerApp(QMainWindow):
 
         # --- TOP TOOLBAR ---
         toolbar = QHBoxLayout()
-        
+        # Oilsjterseliekes matcher button
         self.btn_web = QPushButton()
-        self.btn_web.setStyleSheet("background-color: #007bff; font-weight: bold; padding: 10px 15px;")
+        self.btn_web.setStyleSheet("background-color: #F5B027; font-weight: bold; padding: 10px 15px;")
         self.btn_web.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_web.clicked.connect(self.open_matcher_dialog)
-
+        # CSV MAtcher button
         self.btn_csv = QPushButton()
-        self.btn_csv.setStyleSheet("background-color: #6f42c1; font-weight: bold; padding: 10px 15px;")
+        self.btn_csv.setStyleSheet("background-color: #F5B027; font-weight: bold; padding: 10px 15px;")
         self.btn_csv.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_csv.clicked.connect(self.open_csv_dialog)
         
@@ -123,25 +116,25 @@ class MusicTaggerApp(QMainWindow):
         
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
-        # FIX 1: Align Top (Fixes Vertical Centering)
+        # FIX 1: Align Top
         scroll.setAlignment(Qt.AlignmentFlag.AlignTop)
         
         form_widget = QWidget()
         form_widget.setStyleSheet("background-color: #2b2b2b;")
         self.form_layout = QFormLayout(form_widget)
         
-        # FIX 2: Add Spacing and Margins (Spaced around entire space)
-        self.form_layout.setContentsMargins(25, 25, 25, 25) # More padding around edges
-        self.form_layout.setVerticalSpacing(20)             # More space between rows
+        # FIX 2: Add Spacing and Margins
+        self.form_layout.setContentsMargins(25, 25, 25, 25) 
+        self.form_layout.setVerticalSpacing(20)             
         self.form_layout.setHorizontalSpacing(15)
-        self.form_layout.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow) # Fill width
+        self.form_layout.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow) 
         
         self.meta_fields = {}
         self.field_labels = {} 
         
         for label, tag_key in self.tag_map.items():
             le = QLineEdit()
-            le.setMinimumHeight(30) # Slightly taller inputs for better spacing
+            le.setMinimumHeight(30)
             le.textEdited.connect(self.on_manual_edit) 
             self.meta_fields[label] = le
             
@@ -160,7 +153,9 @@ class MusicTaggerApp(QMainWindow):
         self.lbl_cover_image.setStyleSheet("border: 2px dashed #555; border-radius: 8px; background-color: #222;")
         self.lbl_cover_image.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
+        # Kies cover button
         self.btn_select_cover = QPushButton()
+        self.btn_select_cover.setStyleSheet("background-color: #96CBD0; font-weight: bold; padding: 10px 15px;")
         self.btn_select_cover.clicked.connect(self.select_cover)
         
         cover_center = QHBoxLayout()
@@ -206,6 +201,8 @@ class MusicTaggerApp(QMainWindow):
         self.right_group.setTitle(tr("metadata_editor"))
         self.btn_select_cover.setText(tr("choose_art"))
         self.btn_save_all.setText(tr("save_all"))
+
+        self.lbl_hint.setStyleSheet("color: #96CBD0;")
         if self.lbl_cover_image.text() in ["No Art", "Geen Cover"]:
             self.lbl_cover_image.setText(tr("no_art"))
             
@@ -213,6 +210,7 @@ class MusicTaggerApp(QMainWindow):
         for tag_key, lbl_widget in self.field_labels.items():
             trans_key = f"lbl_{tag_key}"
             lbl_widget.setText(tr(trans_key))
+            lbl_widget.setStyleSheet("color: #96CBD0; font-weight: bold;")
 
     # --- MATCHERS ---
     def open_matcher_dialog(self):
@@ -251,7 +249,17 @@ class MusicTaggerApp(QMainWindow):
             if 'year' in album_common: file_data['year'] = album_common['year']
             file_data['genre'] = "Carnaval"
             
-            file_data['comment'] = ""
+            # --- FIX: Set comment from web data if available, else clear it ---
+            web_comment = ""
+            if i < len(track_data) and len(track_data[i]) > 4:
+                web_comment = track_data[i][4] # Index 4 is Comment (Original)
+            
+            if web_comment:
+                file_data['comment'] = web_comment
+            else:
+                # Still clear it to remove iTunes junk if no original song found
+                file_data['comment'] = "" 
+            # -----------------------------------------------------------------
             
             if options.get('rename'): file_data['_rename'] = True
             
