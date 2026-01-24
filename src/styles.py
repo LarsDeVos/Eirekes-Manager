@@ -3,8 +3,11 @@
 DARK_THEME = """
 QMainWindow { background-color: #2b2b2b; color: #ffffff; }
 QDialog { background-color: #2b2b2b; color: #ffffff; }
-QWidget { color: #f0f0f0; font-family: 'Segoe UI', sans-serif; font-size: 14px; }
-
+QWidget { 
+    color: #f0f0f0; 
+    font-family: 'Segoe UI', '.AppleSystemUIFont', 'Roboto', 'DejaVu Sans', sans-serif; 
+    font-size: 14px; 
+}
 QGroupBox { 
     border: 1px solid #444; 
     border-radius: 6px; 

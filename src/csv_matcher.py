@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel,
 from PyQt6.QtCore import Qt, pyqtSignal
 from styles import DARK_THEME
 # FIX: Import from the renamed file 'app_translations'
-from src.app_translations import tr
+from app_translations import tr
 
 class CsvMatcherDialog(QDialog):
     matches_confirmed = pyqtSignal(list, list, object, bool)

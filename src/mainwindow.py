@@ -2,6 +2,8 @@ import os
 import re
 import logging
 import music_tag
+import sys # Add this if not present
+from pathlib import Path # Add this
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
                              QLabel, QLineEdit, QPushButton, QFileDialog, 
                              QListWidget, QAbstractItemView, QGroupBox, 
@@ -29,8 +31,13 @@ class MusicTaggerApp(QMainWindow):
         self.cover_image_path = None
         self.pending_changes = {} 
 
+        # Determine a safe path for the log file (User's Home Folder)
+        log_dir = os.path.join(os.path.expanduser("~"), "EirekesManagerLogs")
+        os.makedirs(log_dir, exist_ok=True)
+        log_file = os.path.join(log_dir, "application.log")
+
         logging.basicConfig(
-            filename='application.log', 
+            filename=log_file, 
             level=logging.INFO, 
             format='%(asctime)s - %(levelname)s - %(message)s',
             filemode='a'
@@ -116,20 +123,30 @@ class MusicTaggerApp(QMainWindow):
         
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
+        # FIX 1: Align Top (Fixes Vertical Centering)
+        scroll.setAlignment(Qt.AlignmentFlag.AlignTop)
+        
         form_widget = QWidget()
         form_widget.setStyleSheet("background-color: #2b2b2b;")
         self.form_layout = QFormLayout(form_widget)
         
+        # FIX 2: Add Spacing and Margins (Spaced around entire space)
+        self.form_layout.setContentsMargins(25, 25, 25, 25) # More padding around edges
+        self.form_layout.setVerticalSpacing(20)             # More space between rows
+        self.form_layout.setHorizontalSpacing(15)
+        self.form_layout.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow) # Fill width
+        
         self.meta_fields = {}
-        self.field_labels = {} # Store label widgets to update text later
+        self.field_labels = {} 
         
         for label, tag_key in self.tag_map.items():
             le = QLineEdit()
+            le.setMinimumHeight(30) # Slightly taller inputs for better spacing
             le.textEdited.connect(self.on_manual_edit) 
             self.meta_fields[label] = le
             
-            # Create Label manually to store reference
             lbl_widget = QLabel()
+            lbl_widget.setStyleSheet("font-weight: bold; color: #ddd;")
             self.field_labels[tag_key] = lbl_widget
             self.form_layout.addRow(lbl_widget, le)
             
@@ -194,7 +211,6 @@ class MusicTaggerApp(QMainWindow):
             
         # Update Form Labels
         for tag_key, lbl_widget in self.field_labels.items():
-            # key: "lbl_title", "lbl_artist"...
             trans_key = f"lbl_{tag_key}"
             lbl_widget.setText(tr(trans_key))
 
@@ -235,7 +251,6 @@ class MusicTaggerApp(QMainWindow):
             if 'year' in album_common: file_data['year'] = album_common['year']
             file_data['genre'] = "Carnaval"
             
-            # iTunes Comment Fix (Kept as requested, though you can disable)
             file_data['comment'] = ""
             
             if options.get('rename'): file_data['_rename'] = True
