@@ -7,48 +7,62 @@ from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                              QListWidget, QAbstractItemView, QGroupBox, 
                              QMessageBox, QSplitter, QFormLayout, QScrollArea, 
                              QListWidgetItem, QGraphicsDropShadowEffect, QMenuBar, QMenu)
-from PyQt6.QtCore import Qt, QTimer, QSettings
-from PyQt6.QtGui import QPixmap, QKeySequence, QShortcut, QColor, QBrush, QAction
+from PyQt6.QtCore import Qt, QTimer, QSettings, QUrl, QBuffer, QIODevice
+from PyQt6.QtGui import QPixmap, QKeySequence, QShortcut, QColor, QBrush, QAction, QDesktopServices, QImage
 
 from matcher import WebMatcherDialog
 from csv_matcher import CsvMatcherDialog
 from styles import DARK_THEME
 from app_translations import tr, set_language, get_current_language
+from mutagen.mp4 import MP4, MP4Cover
 
 class MusicTaggerApp(QMainWindow):
     def __init__(self):
         super().__init__()
+
         self.settings = QSettings("OilsjterseLiekes", "MetadataMaster")
-        
-        # Load Language Preference
         saved_lang = self.settings.value("language", "en")
         set_language(saved_lang)
 
         self.setWindowTitle(tr("app_title"))
         self.resize(1200, 800)
-        self.cover_image_path = None
-        self.pending_changes = {} 
+
+        self.pending_changes = {}
+
+        # --- LOGGING ---
+        self.log_dir = os.path.join(os.path.expanduser("~"), "EirekesManagerLogs")
+        os.makedirs(self.log_dir, exist_ok=True)
+        self.log_file = os.path.join(self.log_dir, "application.log")
+
+        for handler in logging.root.handlers[:]:
+            logging.root.removeHandler(handler)
 
         logging.basicConfig(
-            filename='application.log', 
-            level=logging.INFO, 
-            format='%(asctime)s - %(levelname)s - %(message)s',
-            filemode='a'
+            filename=self.log_file,
+            level=logging.INFO,
+            format="%(asctime)s - %(levelname)s - %(message)s",
+            filemode="a"
         )
+
         logging.info("Application Started")
 
         self.tag_map = {
-            "Title": "title", "Artist": "artist", "Album": "album",
-            "Year": "year", "Track": "tracknumber", "Genre": "genre",
-            "Album Artist": "albumartist", "Composer": "composer",
-            "Discnumber": "discnumber", "Comment": "comment"
+            "Title": "title",
+            "Artist": "artist",
+            "Album": "album",
+            "Year": "year",
+            "Track": "tracknumber",
+            "Genre": "genre",
+            "Album Artist": "albumartist",
+            "Composer": "composer",
+            "Discnumber": "discnumber",
+            "Comment": "comment"
         }
 
         self.init_ui()
         self.init_notification_system()
         self.setup_shortcuts()
         self.setStyleSheet(DARK_THEME)
-        
         self.load_last_folder_on_startup()
 
     def init_ui(self):
@@ -58,26 +72,31 @@ class MusicTaggerApp(QMainWindow):
         main_layout.setContentsMargins(15, 15, 15, 15)
         main_layout.setSpacing(10)
 
-        # --- MENU BAR (Language) ---
+        # --- MENU BAR ---
         menu_bar = self.menuBar()
-        lang_menu = menu_bar.addMenu("Language")
         
+        # Language Menu
+        lang_menu = menu_bar.addMenu("Language")
         action_en = QAction("English", self)
         action_en.triggered.connect(lambda: self.change_language("en"))
         lang_menu.addAction(action_en)
-        
         action_nl = QAction("Nederlands", self)
         action_nl.triggered.connect(lambda: self.change_language("nl"))
         lang_menu.addAction(action_nl)
 
+        # Help Menu
+        help_menu = menu_bar.addMenu("Help")
+        action_logs = QAction("📂 Open Logs Folder", self)
+        action_logs.triggered.connect(self.open_log_folder)
+        help_menu.addAction(action_logs)
+
         # --- TOP TOOLBAR ---
         toolbar = QHBoxLayout()
-        # Oilsjterseliekes matcher button
         self.btn_web = QPushButton()
         self.btn_web.setStyleSheet("background-color: #F5B027; font-weight: bold; padding: 10px 15px;")
         self.btn_web.setCursor(Qt.CursorShape.PointingHandCursor)
         self.btn_web.clicked.connect(self.open_matcher_dialog)
-        # CSV MAtcher button
+        
         self.btn_csv = QPushButton()
         self.btn_csv.setStyleSheet("background-color: #F5B027; font-weight: bold; padding: 10px 15px;")
         self.btn_csv.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -116,14 +135,11 @@ class MusicTaggerApp(QMainWindow):
         
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
-        # FIX 1: Align Top
         scroll.setAlignment(Qt.AlignmentFlag.AlignTop)
         
         form_widget = QWidget()
         form_widget.setStyleSheet("background-color: #2b2b2b;")
         self.form_layout = QFormLayout(form_widget)
-        
-        # FIX 2: Add Spacing and Margins
         self.form_layout.setContentsMargins(25, 25, 25, 25) 
         self.form_layout.setVerticalSpacing(20)             
         self.form_layout.setHorizontalSpacing(15)
@@ -153,7 +169,6 @@ class MusicTaggerApp(QMainWindow):
         self.lbl_cover_image.setStyleSheet("border: 2px dashed #555; border-radius: 8px; background-color: #222;")
         self.lbl_cover_image.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
-        # Kies cover button
         self.btn_select_cover = QPushButton()
         self.btn_select_cover.setStyleSheet("background-color: #96CBD0; font-weight: bold; padding: 10px 15px;")
         self.btn_select_cover.clicked.connect(self.select_cover)
@@ -182,7 +197,6 @@ class MusicTaggerApp(QMainWindow):
         splitter.setSizes([500, 400])
         main_layout.addWidget(splitter, 1)
         
-        # Apply texts
         self.update_ui_texts()
 
     def change_language(self, lang_code):
@@ -191,7 +205,6 @@ class MusicTaggerApp(QMainWindow):
         self.update_ui_texts()
 
     def update_ui_texts(self):
-        """Refreshes all visible text based on current language."""
         self.setWindowTitle(tr("app_title"))
         self.btn_web.setText(tr("web_matcher"))
         self.btn_csv.setText(tr("import_csv"))
@@ -206,11 +219,13 @@ class MusicTaggerApp(QMainWindow):
         if self.lbl_cover_image.text() in ["No Art", "Geen Cover"]:
             self.lbl_cover_image.setText(tr("no_art"))
             
-        # Update Form Labels
         for tag_key, lbl_widget in self.field_labels.items():
             trans_key = f"lbl_{tag_key}"
             lbl_widget.setText(tr(trans_key))
             lbl_widget.setStyleSheet("color: #96CBD0; font-weight: bold;")
+
+    def open_log_folder(self):
+        QDesktopServices.openUrl(QUrl.fromLocalFile(self.log_dir))
 
     # --- MATCHERS ---
     def open_matcher_dialog(self):
@@ -249,33 +264,26 @@ class MusicTaggerApp(QMainWindow):
             if 'year' in album_common: file_data['year'] = album_common['year']
             file_data['genre'] = "Carnaval"
             
-            # --- FIX: Set comment from web data if available, else clear it ---
             web_comment = ""
             if i < len(track_data) and len(track_data[i]) > 4:
-                web_comment = track_data[i][4] # Index 4 is Comment (Original)
+                web_comment = track_data[i][4] 
             
             if web_comment:
                 file_data['comment'] = web_comment
             else:
-                # Still clear it to remove iTunes junk if no original song found
                 file_data['comment'] = "" 
-            # -----------------------------------------------------------------
             
             if options.get('rename'): file_data['_rename'] = True
             
             if i < len(track_data):
                 track_info = track_data[i]
-                
                 if options.get('track'):
                      t_num = track_info[0] if len(track_info) > 0 and track_info[0] else str(i+1)
                      file_data['tracknumber'] = t_num
-
                 if options.get('title') and len(track_info) > 1: 
                     file_data['title'] = track_info[1]
-                
                 if options.get('artist') and len(track_info) > 2: 
                     file_data['artist'] = track_info[2]
-                    
                 if options.get('lyrics') and len(track_info) > 3:
                     file_data['_lyrics'] = track_info[3]
             else:
@@ -289,6 +297,7 @@ class MusicTaggerApp(QMainWindow):
                 if item.data(Qt.ItemDataRole.UserRole) == file_path:
                     if options.get('rename'):
                         clean_title = self.sanitize_filename(file_data.get('title', 'Unknown'))
+                        clean_artist = self.sanitize_filename(file_data.get('artist', 'Unknown'))
                         if not clean_title: clean_title = "Track"
                         try:
                             t_int = int(file_data.get('tracknumber', 0))
@@ -296,7 +305,7 @@ class MusicTaggerApp(QMainWindow):
                         except: t_str = "00"
                         
                         ext = os.path.splitext(file_path)[1]
-                        predicted_name = f"{t_str} - {clean_title}{ext}"
+                        predicted_name = f"{t_str} - {clean_artist} - {clean_title}{ext}"
                         item.setText(f"* {predicted_name}")
                     else:
                         if not item.text().startswith("*"):
@@ -306,8 +315,9 @@ class MusicTaggerApp(QMainWindow):
                     break
 
         self.show_banner(tr("staged_count").format(len(self.pending_changes)))
+        self.on_selection_changed()
 
-    # --- SAVING ---
+    # --- SAVING (IMPROVED ERROR HANDLING & IMAGE CONVERSION) ---
     def save_all_changes(self):
         if not self.pending_changes:
             self.show_banner(tr("no_changes"), is_error=True)
@@ -316,80 +326,88 @@ class MusicTaggerApp(QMainWindow):
         logging.info("Starting Batch Save...")
         count = 0
         errors = []
-        paths_to_process = list(self.pending_changes.keys())
 
-        for file_path in paths_to_process:
-            if not os.path.exists(file_path): continue
-            
-            changes = self.pending_changes[file_path]
+        paths = list(self.pending_changes.keys())
+
+        for file_path in paths:
+            if not os.path.exists(file_path):
+                continue
+
+            saved_something = False
+
             try:
                 f = music_tag.load_file(file_path)
-                file_dirty = False
-                
-                for tag, new_val in changes.items():
-                    if tag.startswith('_'): continue 
-                    
-                    if tag in ['tracknumber', 'year', 'discnumber', 'comment']:
-                        if new_val == "": 
-                            if f[tag] is not None and str(f[tag]) != "":
-                                f[tag] = None
-                                file_dirty = True
-                            continue
-                    
-                    current_val = str(f[tag]) if f[tag] else ""
-                    if current_val != new_val:
-                        f[tag] = new_val
-                        file_dirty = True
+                changes = self.pending_changes[file_path]
 
-                if self.cover_image_path:
-                    with open(self.cover_image_path, 'rb') as img:
-                        f['artwork'] = img.read()
-                    file_dirty = True
-                
-                if file_dirty:
+                # -------- NORMAL TAGS --------
+                for tag, value in changes.items():
+                    if tag.startswith("_"):
+                        continue
+                    if str(f[tag] or "") != value:
+                        f[tag] = value
+                        saved_something = True
+
+                if saved_something:
                     f.save()
-                    logging.info(tr("saved_log").format(os.path.basename(file_path)))
 
-                new_title = str(f['title'])
-                track_num = str(f['tracknumber'])
-                try: 
-                    t_int = int(track_num) 
-                    t_str = f"{t_int:02d}"
-                except: t_str = "00"
-                clean_title = self.sanitize_filename(new_title)
-                if not clean_title: clean_title = "Unknown"
-                
+                # -------- ARTWORK --------
+                if "_artwork_path" in changes:
+                    art_path = changes["_artwork_path"]
+                    image = QImage(art_path)
+
+                    if not image.isNull():
+                        buf = QBuffer()
+                        buf.open(QIODevice.OpenModeFlag.ReadWrite)
+                        image.save(buf, "PNG")
+                        img_data = bytes(buf.data())
+
+                        ext = os.path.splitext(file_path)[1].lower()
+
+                        if ext in (".m4a", ".mp4"):
+                            mp4 = MP4(file_path)
+
+                            if img_data.startswith(b"\x89PNG"):
+                                cover = MP4Cover(img_data, MP4Cover.FORMAT_PNG)
+                            else:
+                                cover = MP4Cover(img_data, MP4Cover.FORMAT_JPEG)
+
+                            mp4.tags["covr"] = [cover]
+                            mp4.save()
+                            saved_something = True
+                        else:
+                            f["artwork"] = img_data
+                            f.save()
+                            saved_something = True
+
+                if saved_something:
+                    count += 1
+
+                # -------- RENAME / LYRICS --------
+                f = music_tag.load_file(file_path)
+
+                title = self.sanitize_filename(str(f["title"] or "Unknown"))
+                artist = self.sanitize_filename(str(f["artist"] or "Unknown"))
+                track = str(f["tracknumber"] or "0").zfill(2)
+
                 folder = os.path.dirname(file_path)
                 ext = os.path.splitext(file_path)[1]
-                new_filename = f"{t_str} - {clean_title}{ext}"
-                new_path = os.path.join(folder, new_filename)
-                
-                if changes.get('_rename'):
-                    if file_path != new_path:
-                        os.rename(file_path, new_path)
-                        logging.info(tr("renamed_log").format(new_filename))
-                        file_path = new_path 
-                
-                if '_lyrics' in changes and changes['_lyrics']:
-                    lrc_path = os.path.splitext(file_path)[0] + ".lrc"
-                    with open(lrc_path, 'w', encoding='utf-8') as lrc_file:
-                        lrc_file.write(changes['_lyrics'])
-                    logging.info(tr("lyrics_log").format(lrc_path))
+                new_path = os.path.join(folder, f"{track} - {artist} - {title}{ext}")
 
-                count += 1
+                if changes.get("_rename") and file_path != new_path:
+                    os.rename(file_path, new_path)
+
             except Exception as e:
-                err_msg = tr("processing_error").format(os.path.basename(file_path), e)
-                logging.error(err_msg)
-                errors.append(err_msg)
+                err = f"Tag Error ({os.path.basename(file_path)}): {e}"
+                logging.error(err)
+                errors.append(err)
 
         self.pending_changes.clear()
-        if paths_to_process:
-            self.reload_file_list(os.path.dirname(paths_to_process[0]))
+        self.reload_file_list(os.path.dirname(paths[0]))
 
-        if count > 0:
+        if count:
             self.show_banner(tr("save_success").format(count))
         if errors:
-            self.show_banner(tr("save_error").format(len(errors)), is_error=True)
+            self.show_banner(f"Errors: {len(errors)} – check logs", is_error=True)
 
     # --- HELPERS ---
     def get_current_files(self):
@@ -480,12 +498,29 @@ class MusicTaggerApp(QMainWindow):
         except: self.lbl_cover_image.setText(tr("no_art"))
 
     def select_cover(self):
+        selected_items = self.file_list_widget.selectedItems()
+        if not selected_items:
+            self.show_banner(tr("please_load"), is_error=True)
+            return
+
         start_dir = self.settings.value("last_folder", os.path.expanduser("~"))
         path, _ = QFileDialog.getOpenFileName(self, "Select Image", start_dir, "Images (*.jpg *.png)")
+        
         if path:
-            self.cover_image_path = path
             pixmap = QPixmap(path)
             self.lbl_cover_image.setPixmap(pixmap.scaled(180, 180, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+
+            for item in selected_items:
+                f_path = item.data(Qt.ItemDataRole.UserRole)
+                if f_path not in self.pending_changes:
+                    self.pending_changes[f_path] = {}
+                self.pending_changes[f_path]['_artwork_path'] = path
+                
+                item.setForeground(QBrush(QColor("#00ffff")))
+                if not item.text().startswith("*"): 
+                    item.setText(f"* {item.text()}")
+            
+            self.show_banner(tr("staged_count").format(len(self.pending_changes)))
 
     def clear_fields(self):
         for le in self.meta_fields.values(): le.clear(); le.setPlaceholderText("")

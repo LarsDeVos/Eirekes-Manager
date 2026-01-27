@@ -6,3 +6,6 @@
 /src/build/
 /*/dist/
 /*/venv
+
+src/application.log
+src/application.log
