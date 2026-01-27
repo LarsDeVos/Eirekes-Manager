@@ -14,55 +14,50 @@ from matcher import WebMatcherDialog
 from csv_matcher import CsvMatcherDialog
 from styles import DARK_THEME
 from app_translations import tr, set_language, get_current_language
-from mutagen.mp4 import MP4, MP4Cover
 
 class MusicTaggerApp(QMainWindow):
     def __init__(self):
         super().__init__()
-
         self.settings = QSettings("OilsjterseLiekes", "MetadataMaster")
+        
+        # Load Language Preference
         saved_lang = self.settings.value("language", "en")
         set_language(saved_lang)
 
         self.setWindowTitle(tr("app_title"))
         self.resize(1200, 800)
+        
+        self.pending_changes = {} 
 
-        self.pending_changes = {}
-
-        # --- LOGGING ---
+        # --- LOGGING SETUP ---
         self.log_dir = os.path.join(os.path.expanduser("~"), "EirekesManagerLogs")
         os.makedirs(self.log_dir, exist_ok=True)
         self.log_file = os.path.join(self.log_dir, "application.log")
 
+        # Reset handlers to avoid duplicate logs if app restarts
         for handler in logging.root.handlers[:]:
             logging.root.removeHandler(handler)
 
         logging.basicConfig(
-            filename=self.log_file,
-            level=logging.INFO,
-            format="%(asctime)s - %(levelname)s - %(message)s",
-            filemode="a"
+            filename=self.log_file, 
+            level=logging.INFO, 
+            format='%(asctime)s - %(levelname)s - %(message)s',
+            filemode='a'
         )
-
         logging.info("Application Started")
 
         self.tag_map = {
-            "Title": "title",
-            "Artist": "artist",
-            "Album": "album",
-            "Year": "year",
-            "Track": "tracknumber",
-            "Genre": "genre",
-            "Album Artist": "albumartist",
-            "Composer": "composer",
-            "Discnumber": "discnumber",
-            "Comment": "comment"
+            "Title": "title", "Artist": "artist", "Album": "album",
+            "Year": "year", "Track": "tracknumber", "Genre": "genre",
+            "Album Artist": "albumartist", "Composer": "composer",
+            "Discnumber": "discnumber", "Comment": "comment"
         }
 
         self.init_ui()
         self.init_notification_system()
         self.setup_shortcuts()
         self.setStyleSheet(DARK_THEME)
+        
         self.load_last_folder_on_startup()
 
     def init_ui(self):
@@ -317,7 +312,7 @@ class MusicTaggerApp(QMainWindow):
         self.show_banner(tr("staged_count").format(len(self.pending_changes)))
         self.on_selection_changed()
 
-    # --- SAVING (IMPROVED ERROR HANDLING & IMAGE CONVERSION) ---
+    # --- SAVING (FIXED IMAGE & LYRICS) ---
     def save_all_changes(self):
         if not self.pending_changes:
             self.show_banner(tr("no_changes"), is_error=True)
@@ -326,89 +321,132 @@ class MusicTaggerApp(QMainWindow):
         logging.info("Starting Batch Save...")
         count = 0
         errors = []
+        paths_to_process = list(self.pending_changes.keys())
 
-        paths = list(self.pending_changes.keys())
-
-        for file_path in paths:
-            if not os.path.exists(file_path):
+        for file_path in paths_to_process:
+            if not os.path.exists(file_path): continue
+            
+            if not os.access(file_path, os.W_OK):
+                err_msg = f"Locked/Read-only: {os.path.basename(file_path)}"
+                logging.error(err_msg)
+                errors.append(err_msg)
                 continue
 
-            saved_something = False
+            changes = self.pending_changes[file_path]
+            current_path = file_path  # Houd het huidige pad bij (kan wijzigen na rename)
 
+            # --- 1. SAVE TAGS ---
             try:
-                f = music_tag.load_file(file_path)
-                changes = self.pending_changes[file_path]
+                f = music_tag.load_file(current_path)
+                file_dirty = False
+                
+                for tag, new_val in changes.items():
+                    if tag.startswith('_'): continue 
+                    
+                    if tag in ['tracknumber', 'year', 'discnumber', 'comment']:
+                        if new_val == "": 
+                            if f[tag] is not None and str(f[tag]) != "":
+                                f[tag] = None
+                                file_dirty = True
+                            continue
+                    
+                    current_val = str(f[tag]) if f[tag] else ""
+                    if current_val != new_val:
+                        f[tag] = new_val
+                        file_dirty = True
 
-                # -------- NORMAL TAGS --------
-                for tag, value in changes.items():
-                    if tag.startswith("_"):
-                        continue
-                    if str(f[tag] or "") != value:
-                        f[tag] = value
-                        saved_something = True
-
-                if saved_something:
-                    f.save()
-
-                # -------- ARTWORK --------
-                if "_artwork_path" in changes:
-                    art_path = changes["_artwork_path"]
-                    image = QImage(art_path)
-
-                    if not image.isNull():
-                        buf = QBuffer()
-                        buf.open(QIODevice.OpenModeFlag.ReadWrite)
-                        image.save(buf, "PNG")
-                        img_data = bytes(buf.data())
-
-                        ext = os.path.splitext(file_path)[1].lower()
-
-                        if ext in (".m4a", ".mp4"):
-                            mp4 = MP4(file_path)
-
-                            if img_data.startswith(b"\x89PNG"):
-                                cover = MP4Cover(img_data, MP4Cover.FORMAT_PNG)
+                # Artwork Logic
+                if '_artwork_path' in changes:
+                    art_path = changes['_artwork_path']
+                    if art_path and os.path.exists(art_path):
+                        image = QImage(art_path)
+                        if not image.isNull():
+                            ba = QBuffer()
+                            ba.open(QIODevice.OpenModeFlag.ReadWrite)
+                            if image.save(ba, "JPEG", quality=85):
+                                img_data = bytes(ba.data())
+                                try: del f['artwork']
+                                except: pass
+                                f['artwork'] = img_data
+                                file_dirty = True
                             else:
-                                cover = MP4Cover(img_data, MP4Cover.FORMAT_JPEG)
-
-                            mp4.tags["covr"] = [cover]
-                            mp4.save()
-                            saved_something = True
-                        else:
-                            f["artwork"] = img_data
-                            f.save()
-                            saved_something = True
-
-                if saved_something:
-                    count += 1
-
-                # -------- RENAME / LYRICS --------
-                f = music_tag.load_file(file_path)
-
-                title = self.sanitize_filename(str(f["title"] or "Unknown"))
-                artist = self.sanitize_filename(str(f["artist"] or "Unknown"))
-                track = str(f["tracknumber"] or "0").zfill(2)
-
-                folder = os.path.dirname(file_path)
-                ext = os.path.splitext(file_path)[1]
-                new_path = os.path.join(folder, f"{track} - {artist} - {title}{ext}")
-
-                if changes.get("_rename") and file_path != new_path:
-                    os.rename(file_path, new_path)
+                                logging.error(f"Image save failed for {art_path}")
+                
+                if file_dirty:
+                    f.save()
+                    logging.info(tr("saved_log").format(os.path.basename(current_path)))
 
             except Exception as e:
-                err = f"Tag Error ({os.path.basename(file_path)}): {e}"
-                logging.error(err)
-                errors.append(err)
+                err_msg = f"Tag Error ({os.path.basename(current_path)}): {str(e)}"
+                logging.error(err_msg)
+                errors.append(err_msg)
+                # Als tags opslaan faalt, proberen we de rest alsnog, of breken we af?
+                # Meestal is het veiliger om door te gaan, tenzij het bestand corrupt is.
+                # We gaan door naar hernoemen/lyrics.
+
+            # --- 2. RENAME ---
+            try:
+                # We moeten de tags opnieuw laden of de waarden uit 'changes' gebruiken 
+                # om de nieuwe bestandsnaam te bepalen. Veiligheidshalve gebruiken we de file metadata.
+                f_ren = music_tag.load_file(current_path)
+                new_title = str(f_ren['title'])
+                new_artist = str(f_ren['artist'])
+                track_num = str(f_ren['tracknumber'])
+                
+                try: 
+                    t_int = int(track_num) 
+                    t_str = f"{t_int:02d}"
+                except: t_str = "00"
+                
+                clean_title = self.sanitize_filename(new_title)
+                clean_artist = self.sanitize_filename(new_artist)
+                
+                if not clean_title: clean_title = "Unknown"
+                if not clean_artist: clean_artist = "Unknown"
+                
+                folder = os.path.dirname(current_path)
+                ext = os.path.splitext(current_path)[1]
+                new_filename = f"{t_str} - {clean_artist} - {clean_title}{ext}"
+                new_full_path = os.path.join(folder, new_filename)
+                
+                if changes.get('_rename'):
+                    if current_path != new_full_path:
+                        os.rename(current_path, new_full_path)
+                        logging.info(tr("renamed_log").format(new_filename))
+                        current_path = new_full_path  # Update pad voor de volgende stappen (lyrics)
+
+            except Exception as e:
+                err_msg = f"Rename Error ({os.path.basename(current_path)}): {str(e)}"
+                logging.error(err_msg)
+                errors.append(err_msg)
+                # We gaan door, zodat lyrics alsnog opgeslagen kunnen worden (naast het oude bestand)
+
+            # --- 3. LYRICS ---
+            try:
+                if '_lyrics' in changes and changes['_lyrics']:
+                    # Gebruik current_path (wat bijgewerkt is als rename lukte, of origineel is als het faalde)
+                    lrc_path = os.path.splitext(current_path)[0] + ".txt"
+                    with open(lrc_path, 'w', encoding='utf-8') as lrc_file:
+                        lrc_file.write(changes['_lyrics'])
+                    logging.info(tr("lyrics_log").format(lrc_path))
+            
+            except Exception as e:
+                err_msg = f"Lyrics Error ({os.path.basename(current_path)}): {str(e)}"
+                logging.error(err_msg)
+                errors.append(err_msg)
+
+            count += 1
 
         self.pending_changes.clear()
-        self.reload_file_list(os.path.dirname(paths[0]))
+        
+        # Herlaad de lijst map (gebruik de map van het eerste bestand)
+        if paths_to_process:
+            self.reload_file_list(os.path.dirname(paths_to_process[0]))
 
-        if count:
+        if count > 0:
             self.show_banner(tr("save_success").format(count))
         if errors:
-            self.show_banner(f"Errors: {len(errors)} – check logs", is_error=True)
-
+            self.show_banner(f"Errors: {len(errors)}. Check Log!", is_error=True)
     # --- HELPERS ---
     def get_current_files(self):
         current_files = []
