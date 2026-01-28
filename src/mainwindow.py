@@ -1,14 +1,19 @@
 import os
 import re
 import logging
-import music_tag
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
                              QLabel, QLineEdit, QPushButton, QFileDialog, 
                              QListWidget, QAbstractItemView, QGroupBox, 
                              QMessageBox, QSplitter, QFormLayout, QScrollArea, 
                              QListWidgetItem, QGraphicsDropShadowEffect, QMenuBar, QMenu)
-from PyQt6.QtCore import Qt, QTimer, QSettings, QUrl, QBuffer, QIODevice
+from PyQt6.QtCore import Qt, QTimer, QSettings, QUrl, QBuffer, QIODevice, QByteArray
 from PyQt6.QtGui import QPixmap, QKeySequence, QShortcut, QColor, QBrush, QAction, QDesktopServices, QImage
+
+import music_tag
+# Voeg deze regels toe:
+from mutagen.mp4 import MP4, MP4Cover
+from mutagen.id3 import ID3, APIC
+
 
 from matcher import WebMatcherDialog
 from csv_matcher import CsvMatcherDialog
@@ -333,16 +338,17 @@ class MusicTaggerApp(QMainWindow):
                 continue
 
             changes = self.pending_changes[file_path]
-            current_path = file_path  # Houd het huidige pad bij (kan wijzigen na rename)
-
-            # --- 1. SAVE TAGS ---
+            current_path = file_path
+            file_ext = os.path.splitext(current_path)[1].lower()
+            
+            # --- 1. SAVE TAGS (Metadata & Artwork) ---
             try:
+                # A. Eerst tekst tags opslaan met music_tag (werkt goed voor alles)
                 f = music_tag.load_file(current_path)
                 file_dirty = False
                 
                 for tag, new_val in changes.items():
                     if tag.startswith('_'): continue 
-                    
                     if tag in ['tracknumber', 'year', 'discnumber', 'comment']:
                         if new_val == "": 
                             if f[tag] is not None and str(f[tag]) != "":
@@ -354,44 +360,57 @@ class MusicTaggerApp(QMainWindow):
                     if current_val != new_val:
                         f[tag] = new_val
                         file_dirty = True
-
-                # Artwork Logic
-                if '_artwork_path' in changes:
-                    art_path = changes['_artwork_path']
-                    if art_path and os.path.exists(art_path):
-                        image = QImage(art_path)
-                        if not image.isNull():
-                            ba = QBuffer()
-                            ba.open(QIODevice.OpenModeFlag.ReadWrite)
-                            if image.save(ba, "JPEG", quality=85):
-                                img_data = bytes(ba.data())
-                                try: del f['artwork']
-                                except: pass
-                                f['artwork'] = img_data
-                                file_dirty = True
-                            else:
-                                logging.error(f"Image save failed for {art_path}")
                 
                 if file_dirty:
                     f.save()
+
+                # B. Artwork Specifieke Afhandeling
+                if '_artwork_path' in changes:
+                    art_path = changes['_artwork_path']
+                    if art_path and os.path.exists(art_path):
+                        
+                        # 1. Converteer afbeelding naar cleane JPEG bytes
+                        image = QImage(art_path)
+                        if not image.isNull():
+                            ba = QByteArray()
+                            buf = QBuffer(ba)
+                            buf.open(QIODevice.OpenModeFlag.WriteOnly)
+                            image.save(buf, "JPEG", quality=85)
+                            img_data = bytes(ba)
+
+                            # 2. Opslaan afhankelijk van bestandsformaat
+                            if file_ext in ['.m4a', '.mp4']:
+                                # FIX: Gebruik DIRECT Mutagen voor M4A om 'atom' error te voorkomen
+                                m4a_file = MP4(current_path)
+                                # Verwijder oude cover(s) en zet nieuwe met expliciete JPEG vlag
+                                m4a_file['covr'] = [MP4Cover(img_data, imageformat=MP4Cover.FORMAT_JPEG)]
+                                m4a_file.save()
+                            
+                            else:
+                                # Voor MP3/FLAC werkt music_tag meestal wel prima, 
+                                # maar we herladen het bestand om zeker te zijn na de vorige save
+                                f_art = music_tag.load_file(current_path)
+                                try: del f_art['artwork']
+                                except: pass
+                                f_art['artwork'] = img_data
+                                f_art.save()
+                                
                     logging.info(tr("saved_log").format(os.path.basename(current_path)))
 
             except Exception as e:
-                err_msg = f"Tag Error ({os.path.basename(current_path)}): {str(e)}"
+                err_msg = f"Tag/Art Error ({os.path.basename(current_path)}): {str(e)}"
                 logging.error(err_msg)
                 errors.append(err_msg)
-                # Als tags opslaan faalt, proberen we de rest alsnog, of breken we af?
-                # Meestal is het veiliger om door te gaan, tenzij het bestand corrupt is.
-                # We gaan door naar hernoemen/lyrics.
 
             # --- 2. RENAME ---
             try:
-                # We moeten de tags opnieuw laden of de waarden uit 'changes' gebruiken 
-                # om de nieuwe bestandsnaam te bepalen. Veiligheidshalve gebruiken we de file metadata.
+                # Metadata opnieuw laden voor correcte bestandsnaam
                 f_ren = music_tag.load_file(current_path)
-                new_title = str(f_ren['title'])
-                new_artist = str(f_ren['artist'])
-                track_num = str(f_ren['tracknumber'])
+                
+                # Gebruik nieuwe waardes uit changes als die er zijn, anders fallback naar bestand
+                new_title = changes.get('title', str(f_ren['title']))
+                new_artist = changes.get('artist', str(f_ren['artist']))
+                track_num = changes.get('tracknumber', str(f_ren['tracknumber']))
                 
                 try: 
                     t_int = int(track_num) 
@@ -413,18 +432,16 @@ class MusicTaggerApp(QMainWindow):
                     if current_path != new_full_path:
                         os.rename(current_path, new_full_path)
                         logging.info(tr("renamed_log").format(new_filename))
-                        current_path = new_full_path  # Update pad voor de volgende stappen (lyrics)
+                        current_path = new_full_path 
 
             except Exception as e:
                 err_msg = f"Rename Error ({os.path.basename(current_path)}): {str(e)}"
                 logging.error(err_msg)
                 errors.append(err_msg)
-                # We gaan door, zodat lyrics alsnog opgeslagen kunnen worden (naast het oude bestand)
 
             # --- 3. LYRICS ---
             try:
                 if '_lyrics' in changes and changes['_lyrics']:
-                    # Gebruik current_path (wat bijgewerkt is als rename lukte, of origineel is als het faalde)
                     lrc_path = os.path.splitext(current_path)[0] + ".txt"
                     with open(lrc_path, 'w', encoding='utf-8') as lrc_file:
                         lrc_file.write(changes['_lyrics'])
@@ -439,7 +456,6 @@ class MusicTaggerApp(QMainWindow):
 
         self.pending_changes.clear()
         
-        # Herlaad de lijst map (gebruik de map van het eerste bestand)
         if paths_to_process:
             self.reload_file_list(os.path.dirname(paths_to_process[0]))
 
