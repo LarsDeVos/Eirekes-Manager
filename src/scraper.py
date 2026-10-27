@@ -1,3 +1,4 @@
+import logging
 import requests
 import re
 from lyrics_scraper import LyricsScraper
@@ -10,18 +11,16 @@ class AlbumScraper:
     # PUBLIC ENTRY POINT
     # =========================================================
     def fetch_data(self, album_url):
-        print(f"--- DEBUG: Starting fetch_data for {album_url} ---")
         album_data, tracks = self.fetch_album_metadata(album_url)
 
         if not tracks:
-            print("--- DEBUG: No tracks found in metadata ---")
             return album_data, tracks
 
         # Fetch track URLs/Lyrics map
         try:
             lyrics_map = self.lyrics_scraper.get_lyrics_map_from_album(album_url)
         except Exception as e:
-            print(f"DEBUG: Error fetching lyrics map: {e}")
+            logging.warning(f"Error fetching lyrics map: {e}")
             lyrics_map = {}
 
         for track in tracks:
@@ -132,7 +131,7 @@ class AlbumScraper:
             return cleaned_content
 
         except Exception as e:
-            print(f"Scrape Error: {e}")
+            logging.warning(f"Scrape Error: {e}")
             return None
 
     # =========================================================
@@ -147,7 +146,6 @@ class AlbumScraper:
             "&#8212;": "—",
             "&#8230;": "...",
             "&#8216;": "'",
-            "&nbsp;": " " 
         }
 
         corrected = re.sub(
@@ -201,13 +199,10 @@ class AlbumScraper:
 
             try:
                 # If it's a number, it's likely a new track index
-                float(element) 
+                float(element)
                 array_2d.append([element])
             except ValueError:
-                if array_2d[-1]:
-                    array_2d[-1].append(element)
-                else:
-                    array_2d[-1].append(element)
+                array_2d[-1].append(element)
 
         # Remove incomplete rows
         array_2d = [track for track in array_2d if len(track) > 1]

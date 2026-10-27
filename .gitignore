@@ -11,3 +11,5 @@ src/application.log
 src/application.log
 application.log
 .DS_Store
+/*/.DS_Store
+src/.DS_Store

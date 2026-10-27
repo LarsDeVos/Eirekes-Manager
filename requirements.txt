@@ -9,3 +9,6 @@ requests==2.32.3
 soupsieve==2.7
 typing_extensions==4.14.0
 urllib3==2.4.0
+mutagen==1.47.0
+music-tag==0.4.3
+Unidecode
