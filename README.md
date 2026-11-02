@@ -1,62 +1,75 @@
 # Eirekes Manager
 
-Tag carnival music files (Oilsjterse Liekes): fetch track lists from
-oilsjterseliekes.be or a CSV, clean up artist names, write tags / cover art /
-lyrics and rename the files.
+Muziekbestanden van carnaval taggen (Oilsjterse Liekes): tracklijsten ophalen
+van oilsjterseliekes.be of uit een CSV, artiestennamen opkuisen, tags /
+albumhoes / songteksten wegschrijven en de bestanden hernoemen.
 
-## Run
+## Starten
 
 ```bash
 pip install -r requirements.txt
 cd src && python main.py
 ```
 
-## Project layout
+## Opbouw van het project
 
 ```
 src/
-  main.py                 entry point (also used by main.spec / PyInstaller)
-  artists.json            bundled artist list (the online update downloads this file - don't move it)
+  main.py                 startpunt (ook gebruikt door main.spec / PyInstaller)
+  artists.json            meegeleverde artiestenlijst (de online update downloadt dit bestand - niet verplaatsen)
   eirekes_manager/
-    core/                 pure Python logic, no Qt - covered by tests/
-      artist_catalog.py   artist list, spelling normalisation, suggestions
-      artist_review.py    ok / corrected / fuzzy / unknown status for the web matcher
-      artist_sync.py      download a newer artists.json
-      csv_import.py       read a "stoet" CSV
-      filenames.py        "03 - Artist - Title.mp3"
-      metadata.py         which fields the editor shows, reading tags
-      release_type.py     RELEASETYPE tag (Album / Single / EP ...)
-      staging.py          matched rows -> pending changes per file
-      tag_values.py       validate / clean values, read broken tags
-      tag_writer.py       save tags, artwork, rename, lyrics
-    scraping/             oilsjterseliekes.be album + lyrics (parsing separate from downloading)
-    ui/                   PyQt6 windows and widgets
-    i18n.py               translations
-    paths.py              bundled files, log folder
-tests/                    pytest suite (+ tiny silent audio files in tests/fixtures)
-legacy/                   the original stand-alone script, not used by the app
+    core/                 pure Python-logica, zonder Qt - getest in tests/
+      artist_catalog.py   artiestenlijst, schrijfwijze gelijktrekken, suggesties
+      artist_review.py    status ok / verbeterd / twijfel / onbekend voor de web-matcher
+      artist_sync.py      een nieuwere artists.json downloaden
+      csv_import.py       een "stoet"-CSV inlezen
+      filenames.py        "03 - Artiest - Titel.mp3"
+      metadata.py         welke velden de editor toont, tags uitlezen
+      release_type.py     RELEASETYPE-tag (Album / Single / EP ...)
+      staging.py          gekoppelde rijen -> wijzigingen per bestand
+      tag_values.py       waarden controleren / opkuisen, kapotte tags lezen
+      tag_writer.py       tags, albumhoes, hernoemen en songteksten opslaan
+    scraping/             album + songteksten van oilsjterseliekes.be (inlezen los van downloaden)
+    ui/                   PyQt6-vensters en -widgets
+    i18n.py               vertalingen
+    paths.py              meegeleverde bestanden, logmap
+tests/                    pytest-tests (+ kleine stille audiobestanden in tests/fixtures)
+legacy/                   het oorspronkelijke losse script, niet gebruikt door de app
 ```
 
-Rule of thumb: logic goes in `core/` (testable without a screen), `ui/` only
-shows it and calls into `core/`.
+Vuistregel: logica hoort in `core/` (te testen zonder scherm), `ui/` toont
+alleen en roept `core/` aan.
 
-## Tests
+## Testen
 
 ```bash
 pip install -r requirements-dev.txt
 python -m pytest
 ```
 
-The tests run on real mp3 / m4a / flac / wav files (copied to a temp folder),
-so tag writing is checked for every format. The UI tests run without a screen
-and use their own settings file, so they never touch your app settings.
-`tests/test_artists_json.py` checks `src/artists.json` - run it after editing
-the list (duplicate names / aliases, unknown tags, ...).
+De tests werken op echte mp3- / m4a- / flac- / wav-bestanden (gekopieerd naar
+een tijdelijke map), zodat het wegschrijven van tags voor elk formaat
+gecontroleerd wordt. De UI-tests draaien zonder scherm en gebruiken hun eigen
+instellingenbestand, dus je eigen app-instellingen worden nooit aangeraakt.
+`tests/test_artists_json.py` controleert `src/artists.json` - voer die uit
+nadat je de lijst aangepast hebt (dubbele namen / aliassen, onbekende tags, ...).
 
-GitHub Actions runs the tests on every push and pull request
-(`.github/workflows/tests.yml`).
+## De app bouwen
 
-## Update the artist list from a Plex export
+```bash
+python build.py --install
+```
+
+Dit installeert wat nodig is om te bouwen, voert de tests uit, bouwt de app
+met PyInstaller en zet het resultaat als zip in `src/dist/` (een `.app` op
+macOS, een map met `Eirekes-Manager.exe` op Windows, een map met
+`Eirekes-Manager` op Linux). Na de eerste keer mag `--install` weg; met
+`--skip-tests` gaat het sneller.
+
+PyInstaller bouwt alleen voor het besturingssysteem waarop het draait: bouw de
+Windows-versie op een Windows-pc en de Linux-versie op Linux.
+
+## Artiestenlijst bijwerken vanuit een Plex-export
 
 ```bash
 cd src && python -m eirekes_manager.core.artist_catalog <plex-export.csv>
