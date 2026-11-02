@@ -5,9 +5,15 @@ import pytest
 import requests
 
 from eirekes_manager.core import artist_sync
-from eirekes_manager.core.artist_sync import fetch, pick_catalog_file, to_raw_url, validate
+from eirekes_manager.core.artist_sync import (
+    DEFAULT_URL, fetch, pick_catalog_file, to_raw_url, validate)
 
 VALID = {"artists": [{"name": "Den Bremt"}, "Gary"]}
+
+
+def test_default_url_is_the_raw_bundled_file():
+    assert to_raw_url(DEFAULT_URL) == DEFAULT_URL      # already a raw URL
+    assert DEFAULT_URL.endswith("/main/src/artists.json")
 
 
 @pytest.mark.parametrize("url, raw", [

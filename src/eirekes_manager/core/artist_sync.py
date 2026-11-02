@@ -23,7 +23,7 @@ import threading
 
 import requests
 
-DEFAULT_URL = "https://github.com/LarsDeVos/Eirekes-Manager/blob/main/src/artists.json"
+DEFAULT_URL = "https://raw.githubusercontent.com/LarsDeVos/Eirekes-Manager/refs/heads/main/src/artists.json"
 TIMEOUT = 10  # seconds
 
 
