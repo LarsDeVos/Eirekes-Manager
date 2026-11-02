@@ -1,4 +1,4 @@
-# src/extra_tags.py
+# src/eirekes_manager/core/release_type.py
 """
 Tags that music_tag does not support: RELEASETYPE (Album / Single / EP ...).
 

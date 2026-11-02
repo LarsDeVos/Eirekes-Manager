@@ -1,4 +1,4 @@
-# src/artist_field.py
+# src/eirekes_manager/ui/artist_field.py
 """
 Artist input with:
   * autocomplete per artist (works after "&", ",", "en", "feat." too),
@@ -18,8 +18,8 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLineEdit,
                              QListWidget, QListWidgetItem, QDialogButtonBox,
                              QCheckBox, QMenu, QStyledItemDelegate)
 
-from artist_catalog import split_artists, normalize_key, TAG_AKV
-from app_translations import tr
+from ..core.artist_catalog import split_artists, normalize_key, TAG_AKV
+from ..i18n import tr
 
 # Separators after which a new artist starts (for autocomplete)
 _SEGMENT_SPLIT = re.compile(r"(.*(?:,|;|&|\+|\s(?:en|ft\.?|feat\.?|featuring)\s))\s*",
@@ -337,7 +337,7 @@ class ArtistPickerDialog(QDialog):
         self.lbl_selected.setText("→ " + (self.result_text() or "—"))
 
     def result_text(self):
-        return self.catalog._join(self.selected, self.featured)
+        return self.catalog.join_artists(self.selected, self.featured)
 
 
 class ArtistDelegate(QStyledItemDelegate):

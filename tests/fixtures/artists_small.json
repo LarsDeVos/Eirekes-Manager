@@ -1,0 +1,15 @@
+{
+ "artists": [
+  {"name": "Den Bremt", "tags": ["akv"]},
+  {"name": "Gary"},
+  {"name": "Jos"},
+  {"name": "Possensje", "tags": ["akv"]},
+  {"name": "Lekken & Plekken", "tags": ["akv"]},
+  {"name": "Frank & Patrick"},
+  {"name": "Picqueur"},
+  {"name": "Alex De Kegel", "tags": ["prins"], "aliases": ["Prinsj Alex", "Alex"], "prins": [2018]},
+  {"name": "Peter Van Nuffel", "tags": ["arendprins", "prins"], "aliases": ["Den Board"], "prins": [2013], "arendprins": [1998], "arendprinsennaam": "Den Board"},
+  {"name": "Zjieverleppen", "count": 12}
+ ],
+ "ignored": ["Kapotte Naam"]
+}

@@ -1,4 +1,4 @@
-# src/artist_sync.py
+# src/eirekes_manager/core/artist_sync.py
 """
 Keep the artist list up to date from the internet.
 

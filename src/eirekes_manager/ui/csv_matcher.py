@@ -1,13 +1,16 @@
-import csv
+# src/eirekes_manager/ui/csv_matcher.py
+"""Dialog: match the files to the rows of a track list CSV."""
+
 import os
 from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, 
                              QPushButton, QListWidget, QAbstractItemView, QGroupBox, 
                              QSplitter, QWidget, QListWidgetItem, QApplication,
                              QTableWidget, QTableWidgetItem, QHeaderView, QFileDialog, QMessageBox)
 from PyQt6.QtCore import Qt, pyqtSignal
-from styles import DARK_THEME
-# FIX: Import from the renamed file 'app_translations'
-from app_translations import tr
+
+from ..core.csv_import import parse_track_csv
+from ..i18n import tr
+from .styles import DARK_THEME
 
 class CsvMatcherDialog(QDialog):
     matches_confirmed = pyqtSignal(list, list, object, bool)
@@ -132,50 +135,15 @@ class CsvMatcherDialog(QDialog):
         self.csv_table.setRowCount(0)
         
         try:
-            with open(f_name, mode='r', encoding='utf-8-sig') as f:
-                dialect = csv.Sniffer().sniff(f.read(1024))
-                f.seek(0)
-                reader = csv.reader(f, dialect)
-                rows = list(reader)
-                
-                header_idx = -1
-                col_map = {"track": -1, "artist": -1, "title": -1}
-                
-                for i, row in enumerate(rows):
-                    row_lower = [c.lower().strip() for c in row]
-                    if "stoetnummer" in row_lower and "akv" in row_lower:
-                        header_idx = i
-                        try:
-                            col_map["track"] = row_lower.index("stoetnummer")
-                            col_map["artist"] = row_lower.index("akv")
-                            col_map["title"] = row_lower.index("thema")
-                        except ValueError:
-                            pass
-                        break
-                
-                if header_idx == -1:
-                    header_idx = 0
-                    if len(rows[0]) >= 3:
-                        col_map = {"track": 0, "artist": 1, "title": 4} 
-                    else:
-                        QMessageBox.warning(self, tr("csv_warning"), tr("csv_guess_warning"))
-                        col_map = {"track": 0, "artist": 1, "title": 2}
+            data_rows, guessed = parse_track_csv(f_name)
+            if guessed:
+                QMessageBox.warning(self, tr("csv_warning"), tr("csv_guess_warning"))
+            self.csv_table.setRowCount(len(data_rows))
+            for i, (track_val, title_val, artist_val) in enumerate(data_rows):
+                self.csv_table.setItem(i, 0, QTableWidgetItem(str(track_val)))
+                self.csv_table.setItem(i, 1, QTableWidgetItem(str(title_val)))
+                self.csv_table.setItem(i, 2, QTableWidgetItem(str(artist_val)))
 
-                data_rows = rows[header_idx+1:]
-                self.csv_table.setRowCount(len(data_rows))
-                
-                for i, row in enumerate(data_rows):
-                    def get_col(idx):
-                        return row[idx] if idx >= 0 and idx < len(row) else ""
-
-                    track_val = get_col(col_map["track"])
-                    artist_val = get_col(col_map["artist"])
-                    title_val = get_col(col_map["title"])
-                    
-                    self.csv_table.setItem(i, 0, QTableWidgetItem(str(track_val)))
-                    self.csv_table.setItem(i, 1, QTableWidgetItem(str(title_val)))
-                    self.csv_table.setItem(i, 2, QTableWidgetItem(str(artist_val)))
-            
             self.btn_apply.setEnabled(True)
             self.btn_link.setEnabled(True)
             

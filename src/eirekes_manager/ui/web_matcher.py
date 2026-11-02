@@ -1,3 +1,6 @@
+# src/eirekes_manager/ui/web_matcher.py
+"""Dialog: fetch an album from oilsjterseliekes.be and match it to the files."""
+
 import os
 from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
                              QPushButton, QListWidget, QAbstractItemView, QGroupBox,
@@ -5,20 +8,24 @@ from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QLineEdi
                              QTableWidget, QTableWidgetItem, QHeaderView, QCheckBox, QMenu)
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QColor, QBrush, QIcon, QPixmap, QPainter
-from scraper import AlbumScraper
-from artist_catalog import TAG_AKV, split_artists, normalize_key
-from artist_field import ArtistDelegate, ArtistPickerDialog
+
+from ..core.artist_catalog import TAG_AKV
+from ..core.artist_review import STATUSES, web_row_status
+from ..i18n import tr
+from ..scraping.album_scraper import AlbumScraper
+from .artist_field import ArtistDelegate, ArtistPickerDialog
+from .styles import DARK_THEME
 
 # Column indexes in the web table
 COL_NUM, COL_TITLE, COL_ARTIST, COL_LYRICS, COL_COMMENT, COL_WEB_ARTIST = range(6)
 
 # Colours for the artist recommendation (dot + text colour; the dark theme
-# stylesheet ignores cell backgrounds)
+# stylesheet ignores cell backgrounds). See core/artist_review.py.
 ARTIST_COLORS = {
-    "ok": None,                 # exactly as in the list and as on the website
-    "corrected": "#6fdc8c",     # known artist, spelling/notation corrected
-    "fuzzy": "#F5B027",         # typo -> closest artist from the list (check!)
-    "unknown": "#ff6b6b",       # not in the list
+    "ok": None,
+    "corrected": "#6fdc8c",
+    "fuzzy": "#F5B027",
+    "unknown": "#ff6b6b",
 }
 
 
@@ -32,8 +39,7 @@ def _dot_icon(color):
     p.drawEllipse(1, 1, 10, 10)
     p.end()
     return QIcon(pm)
-from styles import DARK_THEME
-from app_translations import tr
+
 
 class WebMatcherDialog(QDialog):
     # Signal: (List of file paths, List of track data, Album Info, OptionsDict)
@@ -245,42 +251,12 @@ class WebMatcherDialog(QDialog):
         self._filling = False
         self.update_artist_summary()
 
-    def artist_status(self, value):
-        """('ok'|'corrected'|'fuzzy'|'unknown', tooltip) for a cell value."""
-        suggestion, parts = self.catalog.suggest(value)
-        lines = []
-        status = "ok"
-        for p in parts:
-            if p["status"] == "unknown":
-                status = "unknown"
-                cands = ", ".join(p["candidates"][:4])
-                lines.append(tr("artist_tip_unknown").format(p["input"]) +
-                             (f"  {tr('artist_maybe').format(cands)}" if cands else ""))
-            elif p["status"] == "fuzzy":
-                if status != "unknown":
-                    status = "fuzzy"
-                lines.append(tr("artist_tip_fuzzy").format(p["input"], p["output"]))
-        if status == "ok" and suggestion != value:
-            status = "corrected"
-            lines.append(tr("artist_suggestion").format(suggestion))
-        return status, "\n".join(lines)
-
     def color_artist_row(self, row):
         item = self.web_table.item(row, COL_ARTIST)
         if item is None or self.catalog is None:
             return
         web_value = self.web_artists[row] if row < len(self.web_artists) else ""
-        status, tip = self.artist_status(item.text())
-        if status == "ok" and item.text() != web_value:
-            # fully known now, but differs from the website -> show what changed
-            auto_value, web_parts = self.catalog.suggest(web_value)
-            # a guessed typo stays yellow until you change the cell yourself
-            guessed = item.text() == auto_value and any(p["status"] == "fuzzy" for p in web_parts)
-            status = "fuzzy" if guessed else "corrected"
-            tip = tr("artist_tip_changed").format(web_value)
-            for p in web_parts:
-                if p["status"] == "fuzzy":
-                    tip += "\n" + tr("artist_tip_fuzzy").format(p["input"], p["output"])
+        status, tip = web_row_status(self.catalog, item.text(), web_value)
         color = ARTIST_COLORS[status]
         item.setForeground(QBrush(QColor(color)) if color else QBrush())
         item.setIcon(_dot_icon(color) if color else QIcon())
@@ -298,7 +274,7 @@ class WebMatcherDialog(QDialog):
     def update_artist_summary(self):
         if self.catalog is None:
             return
-        counts = {"ok": 0, "corrected": 0, "fuzzy": 0, "unknown": 0}
+        counts = dict.fromkeys(STATUSES, 0)
         for row in range(self.web_table.rowCount()):
             item = self.web_table.item(row, COL_ARTIST)
             if item is not None:
@@ -341,7 +317,7 @@ class WebMatcherDialog(QDialog):
             return
         act = actions[chosen]
         if act[0] == "replace":
-            item.setText(self.replace_artist(value, act[1], act[2]))
+            item.setText(self.catalog.replace_artist(value, act[1], act[2]))
         elif act[0] == "pick":
             dlg = ArtistPickerDialog(self.catalog, value, self)
             if dlg.exec() == QDialog.DialogCode.Accepted:
@@ -356,17 +332,6 @@ class WebMatcherDialog(QDialog):
                 self.color_artist_row(r)
             self._filling = False
             self.update_artist_summary()
-
-    def replace_artist(self, value, old, new):
-        """Swap one artist inside 'A & B feat. C', keeping the structure."""
-        lead, feat = [], []
-        l, f = split_artists(value)
-        for src, dst in ((l, lead), (f, feat)):
-            for part in src:
-                canon = self.catalog.canonical(part)
-                dst.append(new if normalize_key(canon) == normalize_key(old) or
-                           normalize_key(part) == normalize_key(old) else canon)
-        return self.catalog._join(lead, feat)
 
     def confirm_matches(self):
         reordered_files = []

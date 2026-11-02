@@ -1,4 +1,4 @@
-# src/artist_catalog.py
+# src/eirekes_manager/core/artist_catalog.py
 """
 Artist catalog: one canonical spelling per artist.
 
@@ -13,7 +13,8 @@ artists.json is the curated list (one artist per line, edit freely):
   {"name": "Possensje", "tags": ["akv"]}
 Tags: "akv" = Aalsterse Karnavalvereniging. Names in "ignored" are never
 offered or re-imported. Merge a new Plex export into it with
-`python artist_catalog.py <plex-export.csv>` (keeps tags and ignored names);
+`python -m eirekes_manager.core.artist_catalog <plex-export.csv>`
+(run from src/) (keeps tags and ignored names);
 the app can also import an export via the menu (Artists > Import from Plex CSV).
 """
 
@@ -272,6 +273,15 @@ class ArtistCatalog:
             self._load_file(user_path, user=True)
         for name, tags in self.tag_overrides.items():
             self.tags[self.canonical(name)] = set(tags)
+        # artists removed in the app (also ones from the bundled list)
+        for name in self.user_ignored:
+            self._drop(name)
+
+    def _drop(self, canon):
+        for key in [k for k, v in self.by_key.items() if v == canon]:
+            del self.by_key[key]
+        self.by_key.pop(normalize_key(canon), None)
+        self.user_names.discard(canon)
 
     # ---------- loading / saving ----------
     def _load_file(self, path, user=False):
@@ -402,8 +412,7 @@ class ArtistCatalog:
         key = normalize_key(canon)
         self.ignored_keys.add(key)
         self.user_ignored.add(canon)
-        self.by_key.pop(key, None)
-        self.user_names.discard(canon)
+        self._drop(canon)
         self.save_user()
 
     # ---------- lookups ----------
@@ -436,7 +445,8 @@ class ArtistCatalog:
         return self.info.get(self.canonical(name), {}).get("arendprins", [])
 
     @staticmethod
-    def _join(lead, feat):
+    def join_artists(lead, feat):
+        """(['A', 'B'], ['C']) -> 'A & B feat. C'."""
         result = " & ".join(lead)
         if feat:
             result = f"{result} feat. {' & '.join(feat)}" if result else " & ".join(feat)
@@ -455,7 +465,7 @@ class ArtistCatalog:
                     out.append(c)
             return out
 
-        return self._join(_canon_list(lead), _canon_list(feat))
+        return self.join_artists(_canon_list(lead), _canon_list(feat))
 
     def unknown_parts(self, value):
         """Artists in `value` that are not in the catalog."""
@@ -518,8 +528,19 @@ class ArtistCatalog:
                     out.append(info["output"])
             return out
 
-        text = self._join(_resolve(lead), _resolve(feat))
+        text = self.join_artists(_resolve(lead), _resolve(feat))
         return text, parts_out
+
+    def replace_artist(self, value, old, new):
+        """Swap one artist inside 'A & B feat. C', keeping the structure."""
+        lead, feat = [], []
+        l, f = split_artists(value)
+        for src, dst in ((l, lead), (f, feat)):
+            for part in src:
+                canon = self.canonical(part)
+                dst.append(new if normalize_key(canon) == normalize_key(old) or
+                           normalize_key(part) == normalize_key(old) else canon)
+        return self.join_artists(lead, feat)
 
     def search(self, text, limit=50, tag=None):
         """Names containing `text` (accent/case-insensitive), popular first."""
@@ -635,8 +656,9 @@ def write_catalog_data(data, out_path):
 if __name__ == "__main__":
     import sys
     if len(sys.argv) < 2:
-        print("usage: python artist_catalog.py <plex-export.csv> [artists.json]")
+        print("usage: python -m eirekes_manager.core.artist_catalog <plex-export.csv> [artists.json]")
         sys.exit(1)
-    out = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(__file__), "artists.json")
+    from ..paths import SRC_DIR
+    out = sys.argv[2] if len(sys.argv) > 2 else os.path.join(SRC_DIR, "artists.json")
     n = update_catalog_file(sys.argv[1], out)
     print(f"{n} new artists merged into {out}")

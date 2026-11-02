@@ -1,4 +1,4 @@
-# src/tag_values.py
+# src/eirekes_manager/core/tag_values.py
 """
 Validation / cleaning of tag values before they are written, and safe
 reading of tags that are broken in the file (e.g. a date "2026-08-2").

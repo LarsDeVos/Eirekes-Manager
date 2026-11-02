@@ -1,4 +1,4 @@
-# src/app_translations.py
+# src/eirekes_manager/i18n.py
 
 CURRENT_LANG = "en"
 

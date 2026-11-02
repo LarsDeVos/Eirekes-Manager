@@ -1,4 +1,4 @@
-# styles.py
+# src/eirekes_manager/ui/styles.py
 
 DARK_THEME = """
 QMainWindow { background-color: #2b2b2b; color: #ffffff; }
